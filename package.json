@@ -1,0 +1,24 @@
+{
+  "name": "motorcare_egde_ai",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/minhan2005-noon/motorcare_egde_ai#readme",
+  "bugs": {
+    "url": "https://github.com/minhan2005-noon/motorcare_egde_ai/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/minhan2005-noon/motorcare_egde_ai.git"
+  },
+  "license": "MIT",
+  "author": "3 tk gay",
+  "type": "commonjs",
+  "main": "server",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "nodemon": "^3.1.14"
+  }
+}
