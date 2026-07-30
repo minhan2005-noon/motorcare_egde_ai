@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cảnh báo · MotorCare Edge AI</title>
+  <link rel="stylesheet" href="/css/ung_dung.css">
+  <link rel="stylesheet" href="/css/nang_cap_giao_dien.css">
+</head>
+<body data-page="alerts">
+  <div class="app-shell">
+    <aside id="sidebar"></aside>
+    <main class="main-panel">
+      <header class="topbar">
+        <div class="topbar-actions">
+          <button class="icon-button mobile-menu" id="mobileMenuButton" type="button" aria-label="Mở menu">☰</button>
+          <div class="topbar-title">
+            <h1>Cảnh báo vận hành</h1>
+            <p>Cảnh báo theo ngưỡng hệ thống, xác nhận và xử lý có lưu lịch sử</p>
+          </div>
+        </div>
+      </header>
+      <div class="loading-line" id="loadingLine"></div>
+      <section class="page-content">
+        <div class="summary-strip">
+          <div class="summary-item"><span>Chưa xử lý</span><strong id="openCount">0</strong></div>
+          <div class="summary-item"><span>Critical / High</span><strong id="highCount">0</strong></div>
+          <div class="summary-item"><span>Đã xác nhận</span><strong id="ackCount">0</strong></div>
+          <div class="summary-item"><span>Đã xử lý</span><strong id="resolvedCount">0</strong></div>
+        </div>
+        <article class="card">
+          <div class="toolbar">
+            <select class="select" id="motorFilter" aria-label="Lọc theo motor"><option value="">Tất cả motor</option></select>
+            <select class="select" id="severityFilter" aria-label="Lọc theo mức độ">
+              <option value="">Tất cả mức độ</option>
+              <option value="critical">Critical</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+            <select class="select" id="alertStatusFilter" aria-label="Lọc theo trạng thái cảnh báo">
+              <option value="">Tất cả trạng thái</option>
+              <option value="open">Chưa xử lý</option>
+              <option value="acknowledged">Đã xác nhận</option>
+              <option value="resolved">Đã xử lý</option>
+            </select>
+          </div>
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Thời gian</th><th>Motor</th><th>Cảnh báo</th><th>Mức độ</th><th>Trạng thái</th><th></th></tr></thead>
+              <tbody id="alertTableRows"></tbody>
+            </table>
+          </div>
+          <div class="empty-state" id="alertEmpty" hidden><div><strong>Không có cảnh báo</strong><p>Không có dữ liệu phù hợp với bộ lọc hiện tại.</p></div></div>
+        </article>
+      </section>
+    </main>
+  </div>
+  <script defer src="/js/giao_tiep_api/http.js"></script>
+  <script defer src="/js/giao_tiep_api/xac_thuc.api.js"></script>
+  <script defer src="/js/giao_tiep_api/dong_co.api.js"></script>
+  <script defer src="/js/giao_tiep_api/canh_bao.api.js"></script>
+  <script defer src="/js/ngon_ngu.js"></script>
+  <script defer src="/js/thanh_phan/thong_bao.js"></script>
+  <script defer src="/js/thanh_phan/thanh_ben.js"></script>
+  <script defer src="/js/tien_ich/dinh_dang.js"></script>
+  <script defer src="/js/dinh_tuyen.js"></script>
+  <script defer src="/js/chinh.js"></script>
+  <script defer src="/js/chuc_nang/canh_bao.js"></script>
+</body>
+</html>

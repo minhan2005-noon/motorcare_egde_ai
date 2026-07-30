@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dataset · MotorCare Edge AI</title>
+  <link rel="stylesheet" href="/css/ung_dung.css">
+  <link rel="stylesheet" href="/css/nang_cap_giao_dien.css">
+</head>
+<body data-page="dataset">
+  <div class="app-shell">
+    <aside id="sidebar"></aside>
+    <main class="main-panel">
+      <header class="topbar">
+        <div class="topbar-actions">
+          <button class="icon-button mobile-menu" id="mobileMenuButton" type="button" aria-label="Mở menu">☰</button>
+          <div class="topbar-title">
+            <h1>Dataset cảm biến</h1>
+            <p>Duyệt, bổ sung dữ liệu thử nghiệm và xuất CSV</p>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <button class="button secondary" id="addReadingButton" type="button">＋ Thêm mẫu đo</button>
+          <a class="button primary" id="exportLink" href="#">↓ Xuất CSV</a>
+        </div>
+      </header>
+      <div class="loading-line" id="loadingLine"></div>
+      <section class="page-content">
+        <article class="card">
+          <div class="toolbar">
+            <select class="select" id="datasetMotorSelect" aria-label="Chọn motor"></select>
+            <label class="field">
+              <span class="help-text">Từ ngày</span>
+              <input class="input" id="fromDate" type="datetime-local">
+            </label>
+            <label class="field">
+              <span class="help-text">Đến ngày</span>
+              <input class="input" id="toDate" type="datetime-local">
+            </label>
+            <button class="button secondary" id="applyDatasetFilter" type="button">Áp dụng</button>
+          </div>
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Thời gian</th><th>Vibration RMS</th><th>Current RMS</th><th>Nhiệt độ</th><th>Âm thanh</th><th>RPM</th><th>Nguồn</th></tr></thead>
+              <tbody id="datasetRows"></tbody>
+            </table>
+          </div>
+          <div class="card-header"><span id="datasetTotal">0 mẫu đo</span><span class="help-text">Tối đa 1.000 dòng mỗi lần tải</span></div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal" id="readingModal" hidden>
+    <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="readingModalTitle">
+      <div class="card-header"><h2 id="readingModalTitle">Thêm mẫu đo thủ công</h2><button class="icon-button" id="closeReadingModal" type="button">×</button></div>
+      <form id="readingForm">
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="field"><label for="recordedAt">Thời gian đo</label><input class="input" id="recordedAt" name="recordedAt" type="datetime-local"></div>
+            <div class="field"><label for="vibrationRms">Vibration RMS (mm/s)</label><input class="input" id="vibrationRms" name="vibrationRms" type="number" min="0" step="0.001"></div>
+            <div class="field"><label for="currentRms">Current RMS (A)</label><input class="input" id="currentRms" name="currentRms" type="number" min="0" step="0.001"></div>
+            <div class="field"><label for="temperature">Nhiệt độ (°C)</label><input class="input" id="temperature" name="temperature" type="number" min="-50" max="250" step="0.1"></div>
+            <div class="field"><label for="soundLevel">Âm thanh (dB)</label><input class="input" id="soundLevel" name="soundLevel" type="number" min="0" max="180" step="0.1"></div>
+            <div class="field"><label for="rpm">RPM</label><input class="input" id="rpm" name="rpm" type="number" min="0" step="1"></div>
+          </div>
+          <p class="help-text">Nếu giá trị vượt ngưỡng hiệu chuẩn, backend sẽ tự tạo cảnh báo hệ thống.</p>
+        </div>
+        <div class="modal-footer"><button class="button secondary" id="cancelReadingModal" type="button">Hủy</button><button class="button primary" type="submit">Lưu mẫu đo</button></div>
+      </form>
+    </section>
+  </div>
+
+  <script defer src="/js/giao_tiep_api/http.js"></script>
+  <script defer src="/js/giao_tiep_api/xac_thuc.api.js"></script>
+  <script defer src="/js/giao_tiep_api/dong_co.api.js"></script>
+  <script defer src="/js/giao_tiep_api/cam_bien.api.js"></script>
+  <script defer src="/js/giao_tiep_api/canh_bao.api.js"></script>
+  <script defer src="/js/ngon_ngu.js"></script>
+  <script defer src="/js/thanh_phan/thong_bao.js"></script>
+  <script defer src="/js/thanh_phan/thanh_ben.js"></script>
+  <script defer src="/js/tien_ich/dinh_dang.js"></script>
+  <script defer src="/js/dinh_tuyen.js"></script>
+  <script defer src="/js/chinh.js"></script>
+  <script defer src="/js/chuc_nang/du_lieu.js"></script>
+</body>
+</html>

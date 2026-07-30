@@ -1,0 +1,2 @@
+-- Dữ liệu demo được tạo bằng JavaScript vì mật khẩu phải được băm bằng scrypt.
+-- Chạy: npm run db:seed

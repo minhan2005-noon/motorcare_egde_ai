@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Đặt lại mật khẩu MotorCare Edge AI">
+  <title>Quên mật khẩu · MotorCare Edge AI</title>
+  <link rel="stylesheet" href="/css/xac_thuc.css">
+  <link rel="stylesheet" href="/css/nang_cap_xac_thuc.css">
+</head>
+<body>
+  <main class="auth-shell">
+    <section class="auth-visual" aria-label="MotorCare Edge AI">
+      <div class="auth-brand">
+        <span class="auth-logo">M</span>
+        <span>
+          <strong>MotorCare Edge AI</strong>
+          <small>ACCOUNT RECOVERY</small>
+        </span>
+      </div>
+      <div class="auth-message">
+        <p>Khôi phục truy cập</p>
+        <h1>Đặt lại mật khẩu trong một luồng an toàn.</h1>
+        <small>Mã khôi phục chỉ dùng được một lần và tự hết hạn sau 15 phút.</small>
+      </div>
+      <div class="signal-board" aria-hidden="true">
+        <span style="--signal-height: 52%"></span>
+        <span style="--signal-height: 82%"></span>
+        <span style="--signal-height: 38%"></span>
+        <span style="--signal-height: 70%"></span>
+      </div>
+    </section>
+
+    <section class="auth-panel">
+      <div class="reset-step" id="requestStep">
+        <header class="auth-panel-head">
+          <h2>Quên mật khẩu</h2>
+          <p>Nhập email tài khoản. Hệ thống không tiết lộ email có tồn tại hay không.</p>
+        </header>
+        <form class="auth-form" id="requestResetForm" novalidate>
+          <div class="form-alert" id="requestAlert" role="alert" hidden></div>
+          <div class="auth-field">
+            <label for="email">Email</label>
+            <div class="auth-input-wrap">
+              <input class="auth-input" id="email" type="email" autocomplete="email" placeholder="name@company.com" required>
+            </div>
+            <p class="field-error" data-error-for="email"></p>
+          </div>
+          <button class="auth-button" id="requestButton" type="submit">Gửi mã xác minh</button>
+        </form>
+        <p class="auth-foot"><a class="auth-link" href="/login">Quay lại đăng nhập</a></p>
+      </div>
+
+      <div class="reset-step" id="verifyStep" hidden>
+        <header class="auth-panel-head">
+          <h2>Nhập mã xác minh</h2>
+          <p>Mã 6 số đã được gửi tới <strong id="verificationEmail"></strong>.</p>
+        </header>
+        <form class="auth-form" id="verifyCodeForm" novalidate>
+          <div class="form-alert" id="verifyAlert" role="alert" hidden></div>
+          <div class="auth-field">
+            <label for="resetCode">Mã xác minh</label>
+            <div class="auth-input-wrap">
+              <input
+                class="auth-input otp-input"
+                id="resetCode"
+                type="text"
+                inputmode="numeric"
+                autocomplete="one-time-code"
+                maxlength="6"
+                pattern="[0-9]{6}"
+                placeholder="000000"
+                required
+              >
+            </div>
+            <p class="field-error" data-error-for="resetCode"></p>
+          </div>
+          <button class="auth-button" id="verifyButton" type="submit">Xác minh mã</button>
+          <div class="reset-actions">
+            <button class="text-button" id="resendButton" type="button">Gửi lại mã</button>
+            <button class="text-button" id="changeEmailButton" type="button">Đổi email</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="reset-step" id="resetStep" hidden>
+        <header class="auth-panel-head">
+          <h2>Đặt mật khẩu mới</h2>
+          <p>Mã đã được xác minh. Hãy tạo mật khẩu mới cho tài khoản.</p>
+        </header>
+        <form class="auth-form" id="resetPasswordForm" novalidate>
+          <div class="form-alert success" id="resetAlert" role="alert" hidden></div>
+          <div class="auth-field">
+            <label for="newPassword">Mật khẩu mới</label>
+            <div class="auth-input-wrap">
+              <input class="auth-input" id="newPassword" type="password" autocomplete="new-password" placeholder="Tối thiểu 8 ký tự" required>
+              <button class="input-action" type="button" data-toggle-password="newPassword" title="Hiện hoặc ẩn mật khẩu">◉</button>
+            </div>
+            <p class="field-error" data-error-for="newPassword"></p>
+          </div>
+          <div class="auth-field">
+            <label for="confirmPassword">Nhập lại mật khẩu</label>
+            <div class="auth-input-wrap">
+              <input class="auth-input" id="confirmPassword" type="password" autocomplete="new-password" placeholder="Nhập lại mật khẩu" required>
+              <button class="input-action" type="button" data-toggle-password="confirmPassword" title="Hiện hoặc ẩn mật khẩu">◉</button>
+            </div>
+            <p class="field-error" data-error-for="confirmPassword"></p>
+          </div>
+          <button class="auth-button" id="resetButton" type="submit">Đặt lại mật khẩu</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <script defer src="/js/giao_tiep_api/http.js"></script>
+  <script defer src="/js/giao_tiep_api/xac_thuc.api.js"></script>
+  <script defer src="/js/giao_dien_xac_thuc.js"></script>
+  <script defer src="/js/quen_mat_khau.js"></script>
+</body>
+</html>

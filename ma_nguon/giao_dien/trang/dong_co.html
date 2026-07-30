@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Motors · MotorCare Edge AI</title>
+  <link rel="stylesheet" href="/css/ung_dung.css">
+  <link rel="stylesheet" href="/css/nang_cap_giao_dien.css">
+</head>
+<body data-page="motors" data-view="motor-list">
+  <div class="app-shell">
+    <aside id="sidebar"></aside>
+    <main class="main-panel">
+      <header class="topbar">
+        <div class="topbar-actions">
+          <button class="icon-button mobile-menu" id="mobileMenuButton" type="button" aria-label="Mở menu">☰</button>
+          <div class="topbar-title">
+            <h1>Quản lý motor</h1>
+            <p>Thiết bị, thông số định mức và trạng thái kết nối</p>
+          </div>
+        </div>
+        <button class="button primary" id="addMotorButton" type="button"><span aria-hidden="true">＋</span> Thêm motor</button>
+      </header>
+      <div class="loading-line" id="loadingLine"></div>
+
+      <section class="page-content">
+        <div class="summary-strip">
+          <div class="summary-item"><span>Tổng motor</span><strong id="totalMotors">0</strong></div>
+          <div class="summary-item"><span>Đang kết nối</span><strong id="connectedMotors">0</strong></div>
+          <div class="summary-item"><span>Đang bảo trì</span><strong id="maintenanceMotors">0</strong></div>
+          <div class="summary-item"><span>Mất kết nối</span><strong id="offlineMotors">0</strong></div>
+        </div>
+
+        <article class="card">
+          <div class="toolbar">
+            <input class="input search" id="motorSearch" type="search" placeholder="Tìm theo tên, mã thiết bị hoặc vị trí">
+            <select class="select" id="statusFilter" aria-label="Lọc trạng thái">
+              <option value="">Tất cả trạng thái</option>
+              <option value="active">Đang hoạt động</option>
+              <option value="maintenance">Bảo trì</option>
+              <option value="inactive">Ngừng hoạt động</option>
+            </select>
+          </div>
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Motor</th>
+                  <th>Vị trí</th>
+                  <th>Thông số</th>
+                  <th>Hoạt động</th>
+                  <th>Kết nối</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="motorRows"></tbody>
+            </table>
+          </div>
+          <div class="empty-state" id="motorEmpty" hidden>
+            <div><strong>Không tìm thấy motor</strong><p>Thêm thiết bị mới hoặc thay đổi bộ lọc hiện tại.</p></div>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal" id="motorModal" hidden>
+    <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="motorModalTitle">
+      <div class="card-header">
+        <h2 id="motorModalTitle">Thêm motor</h2>
+        <button class="icon-button" id="closeMotorModal" type="button" aria-label="Đóng">×</button>
+      </div>
+      <form id="motorForm">
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="field">
+              <label for="motorName">Tên motor *</label>
+              <input class="input" id="motorName" name="name" maxlength="80" required>
+            </div>
+            <div class="field">
+              <label for="deviceCode">Mã thiết bị</label>
+              <input class="input" id="deviceCode" name="deviceCode" maxlength="40" placeholder="Tự sinh nếu để trống">
+            </div>
+            <div class="field">
+              <label for="location">Vị trí</label>
+              <input class="input" id="location" name="location" maxlength="120">
+            </div>
+            <div class="field">
+              <label for="model">Model</label>
+              <input class="input" id="model" name="model" maxlength="120">
+            </div>
+            <div class="field">
+              <label for="serialNumber">Số serial</label>
+              <input class="input" id="serialNumber" name="serialNumber" maxlength="120">
+            </div>
+            <div class="field">
+              <label for="status">Trạng thái</label>
+              <select class="select" id="status" name="status">
+                <option value="active">Đang hoạt động</option>
+                <option value="maintenance">Bảo trì</option>
+                <option value="inactive">Ngừng hoạt động</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="ratedPowerKw">Công suất (kW)</label>
+              <input class="input" id="ratedPowerKw" name="ratedPowerKw" type="number" min="0" step="0.1">
+            </div>
+            <div class="field">
+              <label for="ratedVoltage">Điện áp (V)</label>
+              <input class="input" id="ratedVoltage" name="ratedVoltage" type="number" min="0" step="1">
+            </div>
+            <div class="field">
+              <label for="ratedCurrent">Dòng điện (A)</label>
+              <input class="input" id="ratedCurrent" name="ratedCurrent" type="number" min="0" step="0.1">
+            </div>
+            <div class="field full">
+              <label for="notes">Ghi chú</label>
+              <textarea class="textarea" id="notes" name="notes" maxlength="500"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="button secondary" id="cancelMotorModal" type="button">Hủy</button>
+          <button class="button primary" id="saveMotorButton" type="submit">Lưu motor</button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <script defer src="/js/giao_tiep_api/http.js"></script>
+  <script defer src="/js/giao_tiep_api/xac_thuc.api.js"></script>
+  <script defer src="/js/giao_tiep_api/dong_co.api.js"></script>
+  <script defer src="/js/giao_tiep_api/canh_bao.api.js"></script>
+  <script defer src="/js/ngon_ngu.js"></script>
+  <script defer src="/js/thanh_phan/thong_bao.js"></script>
+  <script defer src="/js/thanh_phan/thanh_ben.js"></script>
+  <script defer src="/js/tien_ich/dinh_dang.js"></script>
+  <script defer src="/js/dinh_tuyen.js"></script>
+  <script defer src="/js/chinh.js"></script>
+  <script defer src="/js/chuc_nang/dong_co.js"></script>
+</body>
+</html>

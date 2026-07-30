@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Calibration · MotorCare Edge AI</title>
+  <link rel="stylesheet" href="/css/ung_dung.css">
+  <link rel="stylesheet" href="/css/nang_cap_giao_dien.css">
+</head>
+<body data-page="calibration">
+  <div class="app-shell">
+    <aside id="sidebar"></aside>
+    <main class="main-panel">
+      <header class="topbar">
+        <div class="topbar-actions">
+          <button class="icon-button mobile-menu" id="mobileMenuButton" type="button" aria-label="Mở menu">☰</button>
+          <div class="topbar-title"><h1>Hiệu chuẩn ngưỡng</h1><p>Tạo baseline từ dữ liệu đo gần nhất, không bao gồm suy luận AI</p></div>
+        </div>
+        <select class="select" id="calibrationMotorSelect" aria-label="Chọn động cơ"></select>
+      </header>
+      <div class="loading-line" id="loadingLine"></div>
+      <section class="page-content">
+        <div class="split-layout">
+          <article class="card settings-card">
+            <h2>Tạo lần hiệu chuẩn mới</h2>
+            <form class="settings-stack" id="calibrationForm">
+              <div class="field">
+                <label for="sampleCount">Số mẫu gần nhất</label>
+                <input class="input" id="sampleCount" name="sampleCount" type="number" min="5" max="500" value="30">
+                <p class="help-text">Baseline được tính trung bình từ 5 đến 500 mẫu đo gần nhất.</p>
+              </div>
+              <div class="form-grid">
+                <div class="field"><label for="vibrationWarning">Ngưỡng rung (mm/s)</label><input class="input" id="vibrationWarning" name="vibrationWarning" type="number" min="0" step="0.1" placeholder="Tự tính"></div>
+                <div class="field"><label for="currentWarning">Ngưỡng dòng (A)</label><input class="input" id="currentWarning" name="currentWarning" type="number" min="0" step="0.1" placeholder="Tự tính"></div>
+                <div class="field"><label for="temperatureWarning">Ngưỡng nhiệt (°C)</label><input class="input" id="temperatureWarning" name="temperatureWarning" type="number" min="0" step="0.1" placeholder="Tự tính"></div>
+                <div class="field"><label for="soundWarning">Ngưỡng ồn (dB)</label><input class="input" id="soundWarning" name="soundWarning" type="number" min="0" step="0.1" placeholder="Tự tính"></div>
+              </div>
+              <div class="field"><label for="calibrationNotes">Ghi chú</label><textarea class="textarea" id="calibrationNotes" name="notes" maxlength="500"></textarea></div>
+              <button class="button primary" type="submit">Bắt đầu hiệu chuẩn</button>
+            </form>
+          </article>
+          <article class="card">
+            <div class="card-header"><h2>Lịch sử hiệu chuẩn</h2><span class="help-text">Mới nhất trước</span></div>
+            <div class="data-table-wrap">
+              <table class="data-table">
+                <thead><tr><th>Thời gian</th><th>Số mẫu</th><th>Baseline</th><th>Ngưỡng cảnh báo</th></tr></thead>
+                <tbody id="calibrationRows"></tbody>
+              </table>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script defer src="/js/giao_tiep_api/http.js"></script>
+  <script defer src="/js/giao_tiep_api/xac_thuc.api.js"></script>
+  <script defer src="/js/giao_tiep_api/dong_co.api.js"></script>
+  <script defer src="/js/giao_tiep_api/canh_bao.api.js"></script>
+  <script defer src="/js/giao_tiep_api/hieu_chuan.api.js"></script>
+  <script defer src="/js/ngon_ngu.js"></script>
+  <script defer src="/js/thanh_phan/thong_bao.js"></script>
+  <script defer src="/js/thanh_phan/thanh_ben.js"></script>
+  <script defer src="/js/tien_ich/dinh_dang.js"></script>
+  <script defer src="/js/dinh_tuyen.js"></script>
+  <script defer src="/js/chinh.js"></script>
+  <script defer src="/js/chuc_nang/hieu_chuan.js"></script>
+</body>
+</html>

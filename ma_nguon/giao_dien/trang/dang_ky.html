@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Tạo tài khoản MotorCare Edge AI">
+  <title>Đăng ký · MotorCare Edge AI</title>
+  <link rel="stylesheet" href="/css/xac_thuc.css">
+  <link rel="stylesheet" href="/css/nang_cap_xac_thuc.css">
+</head>
+<body>
+  <main class="auth-shell">
+    <section class="auth-visual" aria-label="MotorCare Edge AI">
+      <div class="auth-brand">
+        <span class="auth-logo">M</span>
+        <span>
+          <strong>MotorCare Edge AI</strong>
+          <small>GIÁM SÁT SỨC KHỎE MOTOR</small>
+        </span>
+      </div>
+      <div class="auth-message">
+        <p>Workspace setup</p>
+        <h1>Tạo không gian theo dõi motor của bạn.</h1>
+        <small>Mỗi tài khoản chỉ thấy và quản lý các motor thuộc quyền sở hữu của mình.</small>
+      </div>
+      <div class="signal-board" aria-hidden="true">
+        <span style="--signal-height: 64%"></span>
+        <span style="--signal-height: 45%"></span>
+        <span style="--signal-height: 84%"></span>
+        <span style="--signal-height: 58%"></span>
+      </div>
+    </section>
+
+    <section class="auth-panel">
+      <header class="auth-panel-head">
+        <h2>Tạo tài khoản</h2>
+        <p>Dùng email hợp lệ và mật khẩu đủ mạnh để bảo vệ dữ liệu thiết bị.</p>
+      </header>
+
+      <form class="auth-form" id="registerForm" novalidate>
+        <div class="form-alert" id="formAlert" role="alert" hidden></div>
+        <div class="auth-field">
+          <label for="fullName">Họ và tên</label>
+          <div class="auth-input-wrap">
+            <input class="auth-input" id="fullName" name="fullName" type="text" autocomplete="name" placeholder="Nguyễn Văn An" maxlength="80" required>
+          </div>
+          <p class="field-error" data-error-for="fullName"></p>
+        </div>
+        <div class="auth-field">
+          <label for="email">Email</label>
+          <div class="auth-input-wrap">
+            <input class="auth-input" id="email" name="email" type="email" autocomplete="email" placeholder="name@company.com" required>
+          </div>
+          <p class="field-error" data-error-for="email"></p>
+        </div>
+        <div class="auth-field">
+          <label for="password">Mật khẩu</label>
+          <div class="auth-input-wrap">
+            <input class="auth-input" id="password" name="password" type="password" autocomplete="new-password" placeholder="Tối thiểu 8 ký tự" required>
+            <button class="input-action" type="button" data-toggle-password="password" title="Hiện hoặc ẩn mật khẩu">◉</button>
+          </div>
+          <div class="password-rules" id="passwordRules">
+            <span data-rule="length">8 ký tự</span>
+            <span data-rule="lower">Chữ thường</span>
+            <span data-rule="upper">Chữ hoa</span>
+            <span data-rule="number">Chữ số</span>
+          </div>
+          <p class="field-error" data-error-for="password"></p>
+        </div>
+        <div class="auth-field">
+          <label for="confirmPassword">Nhập lại mật khẩu</label>
+          <div class="auth-input-wrap">
+            <input class="auth-input" id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" placeholder="Nhập lại mật khẩu" required>
+            <button class="input-action" type="button" data-toggle-password="confirmPassword" title="Hiện hoặc ẩn mật khẩu">◉</button>
+          </div>
+          <p class="field-error" data-error-for="confirmPassword"></p>
+        </div>
+        <label class="check-label">
+          <input id="acceptTerms" type="checkbox" required>
+          Tôi đồng ý sử dụng hệ thống đúng mục đích giám sát thiết bị
+        </label>
+        <button class="auth-button" id="submitButton" type="submit">Đăng ký</button>
+      </form>
+
+      <p class="auth-foot">Đã có tài khoản? <a class="auth-link" href="/login">Đăng nhập</a></p>
+    </section>
+  </main>
+
+  <script defer src="/js/giao_tiep_api/http.js"></script>
+  <script defer src="/js/giao_tiep_api/xac_thuc.api.js"></script>
+  <script defer src="/js/giao_dien_xac_thuc.js"></script>
+  <script defer src="/js/dang_ky.js"></script>
+</body>
+</html>

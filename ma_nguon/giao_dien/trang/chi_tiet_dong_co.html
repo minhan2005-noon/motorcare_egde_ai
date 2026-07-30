@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chi tiết motor · MotorCare Edge AI</title>
+  <link rel="stylesheet" href="/css/ung_dung.css">
+  <link rel="stylesheet" href="/css/trang_bang_dieu_khien.css">
+  <link rel="stylesheet" href="/css/nang_cap_giao_dien.css">
+</head>
+<body data-page="motors" data-view="motor-detail">
+  <div class="app-shell">
+    <aside id="sidebar"></aside>
+    <main class="main-panel">
+      <header class="topbar">
+        <div class="topbar-actions">
+          <button class="icon-button mobile-menu" id="mobileMenuButton" type="button" aria-label="Mở menu">☰</button>
+          <a class="icon-button" href="/motors" title="Quay lại" aria-label="Quay lại">←</a>
+          <div class="topbar-title">
+            <h1 id="detailMotorName">Đang tải motor...</h1>
+            <p id="detailMotorCode">—</p>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <span class="status disconnected" id="detailConnection">Chưa kết nối</span>
+          <button class="button primary small" id="detailConnectButton" type="button">Kết nối</button>
+        </div>
+      </header>
+      <div class="loading-line" id="loadingLine"></div>
+
+      <section class="page-content">
+        <div class="summary-strip">
+          <div class="summary-item"><span>Vibration RMS</span><strong id="latestVibration">—</strong></div>
+          <div class="summary-item"><span>Current RMS</span><strong id="latestCurrent">—</strong></div>
+          <div class="summary-item"><span>Nhiệt độ</span><strong id="latestTemperature">—</strong></div>
+          <div class="summary-item"><span>Độ ồn</span><strong id="latestSound">—</strong></div>
+        </div>
+
+        <div class="split-layout">
+          <div class="settings-stack">
+            <article class="card chart-card">
+              <div class="card-header"><h2>Xu hướng cảm biến</h2><span class="realtime">Real-time</span></div>
+              <canvas id="detailChart"></canvas>
+            </article>
+            <article class="card">
+              <div class="card-header">
+                <h2>Dữ liệu gần đây</h2>
+                <a class="button secondary small" id="exportDetailLink" href="#">Xuất CSV</a>
+              </div>
+              <div class="data-table-wrap">
+                <table class="data-table">
+                  <thead><tr><th>Thời gian</th><th>Rung</th><th>Dòng</th><th>Nhiệt độ</th><th>Âm thanh</th><th>RPM</th></tr></thead>
+                  <tbody id="readingRows"></tbody>
+                </table>
+              </div>
+            </article>
+          </div>
+
+          <aside class="card settings-card">
+            <h2>Thông tin thiết bị</h2>
+            <div class="settings-stack" id="motorFacts"></div>
+          </aside>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script defer src="/js/giao_tiep_api/http.js"></script>
+  <script defer src="/js/giao_tiep_api/xac_thuc.api.js"></script>
+  <script defer src="/js/giao_tiep_api/dong_co.api.js"></script>
+  <script defer src="/js/giao_tiep_api/cam_bien.api.js"></script>
+  <script defer src="/js/giao_tiep_api/canh_bao.api.js"></script>
+  <script defer src="/js/ngon_ngu.js"></script>
+  <script defer src="/js/thanh_phan/thong_bao.js"></script>
+  <script defer src="/js/thanh_phan/thanh_ben.js"></script>
+  <script defer src="/js/tien_ich/dinh_dang.js"></script>
+  <script defer src="/js/dinh_tuyen.js"></script>
+  <script defer src="/js/chinh.js"></script>
+  <script defer src="/js/chuc_nang/dong_co.js"></script>
+</body>
+</html>

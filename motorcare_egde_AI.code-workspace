@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"name": "motorcare_egde_AI",
+			"path": "."
+		},
+		{
+			"name": "cc",
+			"path": "../Documents/PlatformIO/Projects/cc"
+		}
+	],
+	"settings": {}
+}

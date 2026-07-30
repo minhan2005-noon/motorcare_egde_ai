@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Dashboard giám sát motor MotorCare Edge AI">
+  <title>Dashboard · MotorCare Edge AI</title>
+  <link rel="stylesheet" href="/css/ung_dung.css">
+  <link rel="stylesheet" href="/css/trang_bang_dieu_khien.css">
+  <link rel="stylesheet" href="/css/nang_cap_giao_dien.css">
+</head>
+<body data-page="dashboard">
+  <div class="app-shell">
+    <aside id="sidebar"></aside>
+    <main class="main-panel">
+      <header class="topbar">
+        <div class="topbar-actions">
+          <button class="icon-button mobile-menu" id="mobileMenuButton" type="button" aria-label="Mở menu">☰</button>
+          <div class="topbar-title">
+            <h1>Tổng quan vận hành</h1>
+            <p>Dữ liệu cảm biến và cảnh báo theo ngưỡng thời gian thực</p>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <select class="select" id="motorSelect" aria-label="Chọn motor"></select>
+          <span class="status disconnected" id="connectionStatus">Chưa kết nối</span>
+          <button class="button primary small" id="connectionButton" type="button">Kết nối</button>
+        </div>
+      </header>
+      <div class="loading-line" id="loadingLine"></div>
+
+      <section class="page-content">
+        <section class="machine-ribbon" aria-labelledby="liveMotorTitle">
+          <div class="machine-ribbon-copy">
+            <span class="eyebrow"><span class="live-dot" aria-hidden="true"></span> Edge telemetry</span>
+            <h2 id="liveMotorTitle">Trạng thái truyền động trực tiếp</h2>
+            <p>Mô hình phản hồi theo trạng thái hiển thị và giúp nhận diện nhanh khu vực motor đang được theo dõi.</p>
+            <div class="machine-facts" aria-label="Thông tin luồng dữ liệu">
+              <span><strong>4</strong> kênh cảm biến</span>
+              <span><strong id="sceneRefreshRate">10s</strong> làm mới</span>
+              <span><strong>24/7</strong> giám sát</span>
+            </div>
+          </div>
+          <div class="motor-stage scene-fallback" id="motor3dScene" role="img" aria-label="Mô hình động cơ ba chiều đang quay">
+            <canvas id="motor3dCanvas"></canvas>
+            <div class="motor-fallback" aria-hidden="true">
+              <span class="fallback-shaft"></span>
+              <span class="fallback-body"></span>
+              <span class="fallback-fan">
+                <i></i><i></i><i></i><i></i>
+              </span>
+            </div>
+            <span class="scene-fallback-label">MotorCare Drive</span>
+          </div>
+        </section>
+
+        <div class="dashboard-grid" id="dashboardGrid">
+          <section class="overview-top">
+            <article class="card health-card">
+              <h2>Motor Health Score</h2>
+              <div class="health-gauge" id="healthGauge">
+                <strong id="healthScore">0<small>%</small></strong>
+                <span id="healthStatus">Chưa có dữ liệu</span>
+              </div>
+              <p class="health-meta">Cập nhật: <span id="lastUpdated">Chưa có</span></p>
+            </article>
+            <section class="metric-row" id="metricCards" aria-label="Chỉ số cảm biến"></section>
+          </section>
+
+          <section class="dashboard-main">
+            <section class="charts-row">
+              <article class="card chart-card">
+                <div class="card-header">
+                  <h3>Vibration RMS (mm/s)</h3>
+                  <span class="realtime">Real-time</span>
+                </div>
+                <canvas id="vibrationChart"></canvas>
+              </article>
+              <article class="card chart-card">
+                <div class="card-header">
+                  <h3>Current RMS (A)</h3>
+                  <span class="realtime">Real-time</span>
+                </div>
+                <canvas id="currentChart"></canvas>
+              </article>
+              <article class="card chart-card">
+                <div class="card-header">
+                  <h3>Temperature (°C)</h3>
+                  <span class="realtime">Real-time</span>
+                </div>
+                <canvas id="temperatureChart"></canvas>
+              </article>
+            </section>
+
+            <article class="card alerts-card">
+              <div class="card-header">
+                <h3>Cảnh báo gần đây</h3>
+                <a class="button secondary small" href="/alerts">Xem tất cả</a>
+              </div>
+              <div class="data-table-wrap">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Thời gian</th>
+                      <th>Motor</th>
+                      <th>Nội dung</th>
+                      <th>Mức độ</th>
+                      <th>Trạng thái</th>
+                    </tr>
+                  </thead>
+                  <tbody id="alertRows"></tbody>
+                </table>
+              </div>
+            </article>
+          </section>
+
+          <aside class="card ai-card">
+            <div class="card-header">
+              <h3>AI Diagnosis</h3>
+              <span class="status maintenance">Chờ tích hợp</span>
+            </div>
+            <div class="ai-body">
+              <div class="ai-placeholder">
+                <span class="ai-chip">AI</span>
+                <h3 id="aiMessage">Mô-đun AI chưa được tích hợp</h3>
+                <p>none AI</p>
+                <code class="endpoint" id="aiEndpoint">/api/ai/inference</code>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script defer src="/js/giao_tiep_api/http.js"></script>
+  <script defer src="/js/giao_tiep_api/xac_thuc.api.js"></script>
+  <script defer src="/js/giao_tiep_api/dong_co.api.js"></script>
+  <script defer src="/js/giao_tiep_api/canh_bao.api.js"></script>
+  <script defer src="/js/ngon_ngu.js"></script>
+  <script defer src="/js/thanh_phan/thong_bao.js"></script>
+  <script defer src="/js/thanh_phan/thanh_ben.js"></script>
+  <script type="module" src="/js/thanh_phan/canh_dong_co_3d.mjs"></script>
+  <script defer src="/js/tien_ich/dinh_dang.js"></script>
+  <script defer src="/js/dinh_tuyen.js"></script>
+  <script defer src="/js/chinh.js"></script>
+  <script defer src="/js/chuc_nang/bang_dieu_khien.js"></script>
+</body>
+</html>

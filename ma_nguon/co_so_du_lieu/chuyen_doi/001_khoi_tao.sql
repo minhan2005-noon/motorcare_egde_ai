@@ -1,0 +1,3 @@
+-- Compatibility note:
+-- Active migrations live in ma_nguon/may_chu/database/migrations.
+-- This file remains as the documented entry point for older project layouts.

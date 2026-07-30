@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cài đặt · MotorCare Edge AI</title>
+  <link rel="stylesheet" href="/css/ung_dung.css">
+  <link rel="stylesheet" href="/css/nang_cap_giao_dien.css">
+</head>
+<body data-page="settings">
+  <div class="app-shell">
+    <aside id="sidebar"></aside>
+    <main class="main-panel">
+      <header class="topbar">
+        <div class="topbar-actions">
+          <button class="icon-button mobile-menu" id="mobileMenuButton" type="button" aria-label="Mở menu">☰</button>
+          <div class="topbar-title"><h1>Cài đặt tài khoản</h1><p>Hồ sơ, thông báo và bảo mật phiên đăng nhập</p></div>
+        </div>
+      </header>
+      <section class="page-content">
+        <div class="settings-workspace">
+          <nav class="settings-tabs" role="tablist" aria-label="Nhóm cài đặt">
+            <button class="settings-tab active" type="button" role="tab" aria-selected="true" aria-controls="accountSettings" data-settings-tab="accountSettings">Tài khoản</button>
+            <button class="settings-tab" type="button" role="tab" aria-selected="false" aria-controls="appearanceSettings" data-settings-tab="appearanceSettings">Giao diện</button>
+            <button class="settings-tab" type="button" role="tab" aria-selected="false" aria-controls="accessibilitySettings" data-settings-tab="accessibilitySettings">Trợ năng</button>
+            <button class="settings-tab" type="button" role="tab" aria-selected="false" aria-controls="dataSettings" data-settings-tab="dataSettings">Thông báo & dữ liệu</button>
+            <button class="settings-tab" type="button" role="tab" aria-selected="false" aria-controls="securitySettings" data-settings-tab="securitySettings">Bảo mật</button>
+          </nav>
+
+          <div class="settings-panels">
+            <section class="settings-panel active" id="accountSettings" role="tabpanel">
+              <div class="settings-heading">
+                <span class="settings-kicker">Thông tin cá nhân</span>
+                <h2>Tài khoản của bạn</h2>
+                <p>Cập nhật tên hiển thị, email đăng nhập và mật khẩu.</p>
+              </div>
+              <div class="settings-grid">
+                <article class="card settings-card">
+                  <h3>Hồ sơ</h3>
+                  <form class="settings-stack" id="profileForm">
+                    <div class="field"><label for="profileName">Họ và tên</label><input class="input" id="profileName" name="fullName" autocomplete="name" required></div>
+                    <div class="field"><label for="profileEmail">Email</label><input class="input" id="profileEmail" name="email" type="email" autocomplete="email" required></div>
+                    <button class="button primary" type="submit">Lưu hồ sơ</button>
+                  </form>
+                </article>
+                <article class="card settings-card">
+                  <h3>Đổi mật khẩu</h3>
+                  <form class="settings-stack" id="passwordForm">
+                    <div class="field"><label for="currentPassword">Mật khẩu hiện tại</label><input class="input" id="currentPassword" type="password" autocomplete="current-password" required></div>
+                    <div class="field"><label for="newPassword">Mật khẩu mới</label><input class="input" id="newPassword" type="password" autocomplete="new-password" required><p class="help-text">Ít nhất 8 ký tự, có chữ hoa, chữ thường và chữ số.</p></div>
+                    <button class="button primary" type="submit">Đổi mật khẩu</button>
+                  </form>
+                </article>
+              </div>
+            </section>
+
+            <section class="settings-panel" id="appearanceSettings" role="tabpanel" hidden>
+              <div class="settings-heading">
+                <span class="settings-kicker">Không gian làm việc</span>
+                <h2>Giao diện</h2>
+                <p>Chọn cách hiển thị phù hợp với ánh sáng và lượng thông tin cần theo dõi.</p>
+              </div>
+              <article class="card preference-list">
+                <div class="preference-row">
+                  <div><strong>Chủ đề màu</strong><p>Tự động theo thiết bị hoặc chọn sáng, tối.</p></div>
+                  <select class="select preference-control" id="themeSelect">
+                    <option value="system">Theo hệ thống</option>
+                    <option value="light">Sáng dịu</option>
+                    <option value="dark">Tối</option>
+                  </select>
+                </div>
+                <div class="preference-row">
+                  <div><strong>Cỡ chữ</strong><p>Áp dụng cho toàn bộ dashboard và bảng dữ liệu.</p></div>
+                  <select class="select preference-control" id="fontScaleSelect">
+                    <option value="small">Nhỏ</option>
+                    <option value="normal">Tiêu chuẩn</option>
+                    <option value="large">Lớn</option>
+                  </select>
+                </div>
+                <div class="preference-row">
+                  <div><strong>Mật độ hiển thị</strong><p>Chế độ gọn hiển thị nhiều dòng dữ liệu hơn.</p></div>
+                  <select class="select preference-control" id="densitySelect">
+                    <option value="comfortable">Thoải mái</option>
+                    <option value="compact">Gọn</option>
+                  </select>
+                </div>
+              </article>
+            </section>
+
+            <section class="settings-panel" id="accessibilitySettings" role="tabpanel" hidden>
+              <div class="settings-heading">
+                <span class="settings-kicker">Dễ đọc và dễ thao tác</span>
+                <h2>Trợ năng</h2>
+                <p>Các tùy chọn này áp dụng ngay, bao gồm cả dashboard thời gian thực.</p>
+              </div>
+              <article class="card preference-list">
+                <div class="preference-row"><div><strong>Tương phản cao</strong><p>Làm rõ đường viền, chữ và trạng thái cảnh báo.</p></div><label class="toggle"><input id="highContrast" type="checkbox" aria-label="Tương phản cao"><span></span></label></div>
+                <div class="preference-row"><div><strong>Giảm chuyển động</strong><p>Dừng hiệu ứng 3D và các chuyển động không thiết yếu.</p></div><label class="toggle"><input id="reducedMotion" type="checkbox" aria-label="Giảm chuyển động"><span></span></label></div>
+                <div class="preference-row"><div><strong>Mô hình motor 3D</strong><p>Hiển thị mô hình quay trực tiếp trên dashboard.</p></div><label class="toggle"><input id="enable3d" type="checkbox" aria-label="Mô hình motor 3D"><span></span></label></div>
+              </article>
+            </section>
+
+            <section class="settings-panel" id="dataSettings" role="tabpanel" hidden>
+              <div class="settings-heading">
+                <span class="settings-kicker">Luồng cập nhật</span>
+                <h2>Thông báo và dữ liệu</h2>
+                <p>Điều chỉnh kênh nhận thông báo và tần suất đồng bộ dashboard.</p>
+              </div>
+              <article class="card preference-list">
+                <div class="preference-row"><div><strong>Thông báo qua email</strong><p>Nhận cảnh báo vận hành ở địa chỉ email tài khoản.</p></div><label class="toggle"><input id="emailNotifications" type="checkbox" aria-label="Thông báo qua email"><span></span></label></div>
+                <div class="preference-row"><div><strong>Thông báo trình duyệt</strong><p>Cho phép cảnh báo hiển thị khi dashboard đang mở.</p></div><label class="toggle"><input id="browserNotifications" type="checkbox" aria-label="Thông báo trình duyệt"><span></span></label></div>
+                <div class="preference-row">
+                  <div><strong>Chu kỳ làm mới</strong><p>Tần suất dashboard tự lấy dữ liệu mới.</p></div>
+                  <select class="select preference-control" id="refreshIntervalSelect">
+                    <option value="3">3 giây</option>
+                    <option value="5">5 giây</option>
+                    <option value="10">10 giây</option>
+                    <option value="30">30 giây</option>
+                    <option value="60">1 phút</option>
+                  </select>
+                </div>
+                <div class="preference-row">
+                  <div><strong>Ngôn ngữ</strong><p>Chuyển toàn bộ nội dung sang tiếng Việt hoặc tiếng Anh.</p></div>
+                  <select class="select preference-control" id="languageSelect"><option value="vi">Tiếng Việt</option><option value="en">English</option></select>
+                </div>
+              </article>
+            </section>
+
+            <section class="settings-panel" id="securitySettings" role="tabpanel" hidden>
+              <div class="settings-heading">
+                <span class="settings-kicker">Kiểm soát truy cập</span>
+                <h2>Bảo mật phiên đăng nhập</h2>
+                <p>Thu hồi toàn bộ phiên khi nghi ngờ tài khoản đang được sử dụng ở nơi khác.</p>
+              </div>
+              <article class="card security-zone">
+                <div>
+                  <strong>Đăng xuất tất cả thiết bị</strong>
+                  <p>Thao tác này vô hiệu hóa mọi phiên đang mở, kể cả trình duyệt hiện tại.</p>
+                </div>
+                <button class="button danger" id="logoutAllButton" type="button">Đăng xuất tất cả</button>
+              </article>
+            </section>
+          </div>
+
+          <footer class="settings-savebar">
+            <span id="settingsSaveStatus" role="status" aria-live="polite">Mọi thay đổi tùy chọn cần được lưu.</span>
+            <button class="button primary" id="saveSettingsButton" type="button">Lưu tùy chọn</button>
+          </footer>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script defer src="/js/giao_tiep_api/http.js"></script>
+  <script defer src="/js/giao_tiep_api/xac_thuc.api.js"></script>
+  <script defer src="/js/giao_tiep_api/canh_bao.api.js"></script>
+  <script defer src="/js/giao_tiep_api/nguoi_dung.api.js"></script>
+  <script defer src="/js/ngon_ngu.js"></script>
+  <script defer src="/js/thanh_phan/thong_bao.js"></script>
+  <script defer src="/js/thanh_phan/thanh_ben.js"></script>
+  <script defer src="/js/dinh_tuyen.js"></script>
+  <script defer src="/js/chinh.js"></script>
+  <script defer src="/js/chuc_nang/cai_dat.js"></script>
+</body>
+</html>
