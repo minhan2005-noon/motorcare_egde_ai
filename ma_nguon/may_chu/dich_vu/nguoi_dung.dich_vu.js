@@ -3,6 +3,15 @@ const settingsRepository = require('../kho_du_lieu/cai_dat.kho_du_lieu');
 const authValidator = require('../kiem_tra/xac_thuc.kiem_tra');
 const httpError = require('../tien_ich/loi_http');
 
+const PHONE_PATTERN = /^0(3|5|7|8|9)\d{8}$/;
+const CITIZEN_ID_PATTERN = /^\d{12}$/;
+const GENDERS = new Set(['male', 'female', 'other', 'prefer_not_to_say']);
+
+function optionalValue(value) {
+  const normalized = String(value ?? '').trim();
+  return normalized || null;
+}
+
 async function updateProfile(userId, payload) {
   const patch = {};
 
@@ -23,10 +32,48 @@ async function updateProfile(userId, payload) {
     patch.email = email;
   }
 
+  if (payload.phone !== undefined) {
+    let phone = optionalValue(payload.phone)?.replace(/[.\s-]/g, '') || null;
+    if (phone?.startsWith('+84')) phone = `0${phone.slice(3)}`;
+    if (phone && !PHONE_PATTERN.test(phone)) {
+      throw httpError(400, 'Số điện thoại Việt Nam phải gồm 10 chữ số hợp lệ');
+    }
+    patch.phone = phone;
+  }
+
+  if (payload.gender !== undefined) {
+    const gender = optionalValue(payload.gender);
+    if (gender && !GENDERS.has(gender)) {
+      throw httpError(400, 'Giới tính không hợp lệ');
+    }
+    patch.gender = gender;
+  }
+
+  if (payload.citizenId !== undefined) {
+    const citizenId = optionalValue(payload.citizenId)?.replace(/\s/g, '') || null;
+    if (citizenId && !CITIZEN_ID_PATTERN.test(citizenId)) {
+      throw httpError(400, 'CCCD phải gồm đúng 12 chữ số');
+    }
+    patch.citizenId = citizenId;
+  }
+
   if (!Object.keys(patch).length) {
     throw httpError(400, 'Không có thông tin cần cập nhật');
   }
-  return userRepository.updateProfile(userId, patch);
+  try {
+    return await userRepository.updateProfile(userId, patch);
+  } catch (error) {
+    const constraintMessage = String(error.message || '');
+    if (String(error.code || '').includes('CONSTRAINT') || constraintMessage.includes('UNIQUE constraint failed')) {
+      if (constraintMessage.includes('users.phone')) {
+        throw httpError(409, 'Số điện thoại đã được sử dụng');
+      }
+      if (constraintMessage.includes('users.citizen_id')) {
+        throw httpError(409, 'CCCD đã được sử dụng');
+      }
+    }
+    throw error;
+  }
 }
 
 async function getSettings(userId) {

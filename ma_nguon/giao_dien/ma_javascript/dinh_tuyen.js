@@ -17,6 +17,10 @@
     calibration: {
       scripts: ['/js/tien_ich/dinh_dang.js', '/js/giao_tiep_api/dong_co.api.js', '/js/giao_tiep_api/hieu_chuan.api.js', '/js/chuc_nang/hieu_chuan.js'],
     },
+    profile: {
+      scripts: ['/js/giao_tiep_api/nguoi_dung.api.js', '/js/chuc_nang/ho_so.js'],
+      styles: ['/css/bo_le.css'],
+    },
     settings: {
       scripts: ['/js/giao_tiep_api/nguoi_dung.api.js', '/js/chuc_nang/cai_dat.js'],
     },
@@ -31,6 +35,7 @@
       '/alerts',
       '/dataset',
       '/calibration',
+      '/profile',
       '/settings',
     ].some((route) => url.pathname === route || url.pathname.startsWith(`${route}/`));
   }

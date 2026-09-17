@@ -57,6 +57,10 @@ Tất cả API nghiệp vụ, trừ đăng ký/đăng nhập/quên mật khẩu,
 - `PATCH /api/users/profile`
 - `GET|PATCH /api/users/settings`
 
+Sau khi đăng nhập hoặc đăng ký, người dùng được đưa tới `/profile` để cập nhật
+họ tên, số điện thoại, email, giới tính, CCCD và mật khẩu. Các trường số điện
+thoại/CCCD có thể để trống nhưng phải đúng định dạng và không được trùng khi đã nhập.
+
 ## Gửi mã quên mật khẩu qua email
 
 Điền cấu hình SMTP trong `.env`. Với Gmail, bật xác minh hai bước, tạo App

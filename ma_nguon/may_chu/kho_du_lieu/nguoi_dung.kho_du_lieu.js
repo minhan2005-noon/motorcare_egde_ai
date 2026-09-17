@@ -10,6 +10,9 @@ function mapUser(row, { includePassword = false } = {}) {
     email: row.email,
     fullName: row.full_name,
     name: row.full_name,
+    phone: row.phone || '',
+    gender: row.gender || '',
+    citizenId: row.citizen_id || '',
     role: row.role,
     isActive: Boolean(row.is_active),
     failedLoginAttempts: row.failed_login_attempts,
@@ -94,9 +97,23 @@ async function updateProfile(id, patch) {
     UPDATE users
     SET full_name = COALESCE(?, full_name),
         email = COALESCE(?, email),
+        phone = CASE WHEN ? THEN ? ELSE phone END,
+        gender = CASE WHEN ? THEN ? ELSE gender END,
+        citizen_id = CASE WHEN ? THEN ? ELSE citizen_id END,
         updated_at = ?
     WHERE id = ?
-  `).run(patch.fullName ?? null, patch.email ?? null, now, id);
+  `).run(
+    patch.fullName ?? null,
+    patch.email ?? null,
+    Number(Object.hasOwn(patch, 'phone')),
+    patch.phone ?? null,
+    Number(Object.hasOwn(patch, 'gender')),
+    patch.gender ?? null,
+    Number(Object.hasOwn(patch, 'citizenId')),
+    patch.citizenId ?? null,
+    now,
+    id,
+  );
   return findPublicById(id);
 }
 

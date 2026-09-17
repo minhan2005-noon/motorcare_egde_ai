@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Chỉnh sửa hồ sơ kỹ sư MotorCare Edge AI">
+  <title>Hồ sơ kỹ sư · MotorCare Edge AI</title>
+  <link rel="stylesheet" href="/css/ung_dung.css">
+  <link rel="stylesheet" href="/css/nang_cap_giao_dien.css">
+  <link rel="stylesheet" href="/css/bo_le.css">
+</head>
+<body data-page="profile">
+  <div class="app-shell">
+    <aside id="sidebar"></aside>
+    <main class="main-panel">
+      <header class="topbar engineer-topbar">
+        <div class="topbar-actions">
+          <button class="icon-button mobile-menu" id="mobileMenuButton" type="button" aria-label="Mở menu">☰</button>
+          <div class="topbar-title">
+            <span class="engineer-breadcrumb">WORKSPACE / ENGINEER PROFILE</span>
+            <h1>Hồ sơ kỹ sư</h1>
+            <p>Quản lý danh tính vận hành và bảo mật tài khoản</p>
+          </div>
+        </div>
+        <a class="button secondary profile-dashboard-link" href="/dashboard">
+          <span aria-hidden="true">↗</span> Mở dashboard
+        </a>
+      </header>
+
+      <section class="page-content profile-page">
+        <div class="profile-welcome" id="profileWelcome" hidden>
+          <span class="welcome-pulse" aria-hidden="true"></span>
+          <div>
+            <strong>Tài khoản đã sẵn sàng.</strong>
+            <p>Hoàn thiện hồ sơ kỹ sư để đội vận hành nhận diện bạn chính xác hơn.</p>
+          </div>
+          <button class="welcome-close" id="welcomeClose" type="button" aria-label="Đóng thông báo">×</button>
+        </div>
+
+        <section class="engineer-identity" aria-labelledby="profileHeading">
+          <div class="identity-blueprint" aria-hidden="true">
+            <span class="blueprint-ring ring-one"></span>
+            <span class="blueprint-ring ring-two"></span>
+            <span class="blueprint-axis axis-x"></span>
+            <span class="blueprint-axis axis-y"></span>
+            <span class="identity-avatar" id="profileAvatar">MC</span>
+            <span class="identity-status-dot"></span>
+          </div>
+          <div class="identity-copy">
+            <span class="profile-kicker">ENGINEER IDENTITY · ACTIVE</span>
+            <h2 id="profileHeading">Thiết lập hồ sơ vận hành</h2>
+            <p>Mọi thông tin được dùng để xác định người phụ trách thiết bị và bảo vệ quyền truy cập vào dữ liệu motor.</p>
+            <div class="identity-tags" aria-label="Trạng thái tài khoản">
+              <span><i aria-hidden="true"></i> Phiên đăng nhập an toàn</span>
+              <span>Quyền: <strong id="profileRole">engineer</strong></span>
+            </div>
+          </div>
+          <div class="profile-completion">
+            <div class="completion-head">
+              <span>Mức hoàn thiện</span>
+              <strong id="completionPercent">40%</strong>
+            </div>
+            <div class="completion-track" role="progressbar" aria-label="Mức hoàn thiện hồ sơ" aria-valuemin="0" aria-valuemax="100" aria-valuenow="40" id="completionTrack">
+              <span id="completionBar"></span>
+            </div>
+            <small id="completionHint">Bổ sung thông tin còn thiếu để hoàn thiện hồ sơ.</small>
+          </div>
+        </section>
+
+        <div class="profile-layout">
+          <article class="profile-card profile-information-card">
+            <header class="profile-card-head">
+              <span class="section-index">01</span>
+              <div>
+                <span class="profile-kicker">PERSONAL DATA</span>
+                <h2>Thông tin cá nhân</h2>
+                <p>Cập nhật thông tin định danh gắn với tài khoản của bạn.</p>
+              </div>
+              <span class="card-state">EDITABLE</span>
+            </header>
+
+            <form class="engineer-form" id="engineerProfileForm" novalidate>
+              <div class="profile-alert" id="profileAlert" role="alert" hidden></div>
+              <div class="engineer-form-grid">
+                <div class="engineer-field full-field">
+                  <label for="profileFullName">Họ và tên</label>
+                  <div class="engineer-input-wrap">
+                    <span class="field-code" aria-hidden="true">ID</span>
+                    <input id="profileFullName" name="fullName" type="text" autocomplete="name" maxlength="80" placeholder="Nguyễn Văn An" required>
+                  </div>
+                  <p class="profile-field-error" data-profile-error="fullName"></p>
+                </div>
+
+                <div class="engineer-field">
+                  <label for="profilePhone">Số điện thoại</label>
+                  <div class="engineer-input-wrap">
+                    <span class="field-code" aria-hidden="true">TEL</span>
+                    <input id="profilePhone" name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="15" placeholder="0901 234 567">
+                  </div>
+                  <p class="profile-field-error" data-profile-error="phone"></p>
+                </div>
+
+                <div class="engineer-field">
+                  <label for="profileEmail">Email đăng nhập</label>
+                  <div class="engineer-input-wrap">
+                    <span class="field-code" aria-hidden="true">@</span>
+                    <input id="profileEmail" name="email" type="email" autocomplete="email" maxlength="254" placeholder="engineer@company.com" required>
+                  </div>
+                  <p class="profile-field-error" data-profile-error="email"></p>
+                </div>
+
+                <div class="engineer-field">
+                  <label for="profileGender">Giới tính</label>
+                  <div class="engineer-input-wrap engineer-select-wrap">
+                    <span class="field-code" aria-hidden="true">GEN</span>
+                    <select id="profileGender" name="gender" autocomplete="sex">
+                      <option value="">Chưa chọn</option>
+                      <option value="male">Nam</option>
+                      <option value="female">Nữ</option>
+                      <option value="other">Khác</option>
+                      <option value="prefer_not_to_say">Không muốn tiết lộ</option>
+                    </select>
+                  </div>
+                  <p class="profile-field-error" data-profile-error="gender"></p>
+                </div>
+
+                <div class="engineer-field">
+                  <label for="profileCitizenId">Căn cước công dân (CCCD)</label>
+                  <div class="engineer-input-wrap">
+                    <span class="field-code" aria-hidden="true">VN</span>
+                    <input id="profileCitizenId" name="citizenId" type="text" autocomplete="off" inputmode="numeric" maxlength="12" placeholder="12 chữ số">
+                  </div>
+                  <p class="profile-field-error" data-profile-error="citizenId"></p>
+                </div>
+              </div>
+
+              <div class="profile-form-footer">
+                <span><i aria-hidden="true"></i> Dữ liệu được đồng bộ với tài khoản hiện tại.</span>
+                <button class="engineer-button primary-action" id="saveProfileButton" type="submit">
+                  <span>Lưu thay đổi</span><b aria-hidden="true">→</b>
+                </button>
+              </div>
+            </form>
+          </article>
+
+          <aside class="profile-side-column">
+            <article class="profile-card security-card">
+              <header class="profile-card-head compact">
+                <span class="section-index">02</span>
+                <div>
+                  <span class="profile-kicker">ACCESS SECURITY</span>
+                  <h2>Đổi mật khẩu</h2>
+                  <p>Đặt lại khóa truy cập cho phiên làm việc.</p>
+                </div>
+              </header>
+
+              <form class="engineer-form password-form" id="engineerPasswordForm" novalidate>
+                <div class="profile-alert" id="passwordAlert" role="alert" hidden></div>
+                <div class="engineer-field">
+                  <label for="profileCurrentPassword">Mật khẩu hiện tại</label>
+                  <div class="engineer-input-wrap password-wrap">
+                    <span class="field-code" aria-hidden="true">OLD</span>
+                    <input id="profileCurrentPassword" type="password" autocomplete="current-password" placeholder="Nhập mật khẩu hiện tại" required>
+                    <button class="password-visibility" type="button" data-password-target="profileCurrentPassword" aria-label="Hiện mật khẩu">◉</button>
+                  </div>
+                  <p class="profile-field-error" data-profile-error="currentPassword"></p>
+                </div>
+
+                <div class="engineer-field">
+                  <label for="profileNewPassword">Mật khẩu mới</label>
+                  <div class="engineer-input-wrap password-wrap">
+                    <span class="field-code" aria-hidden="true">NEW</span>
+                    <input id="profileNewPassword" type="password" autocomplete="new-password" placeholder="Tối thiểu 8 ký tự" required>
+                    <button class="password-visibility" type="button" data-password-target="profileNewPassword" aria-label="Hiện mật khẩu">◉</button>
+                  </div>
+                  <div class="security-meter" id="securityMeter" aria-label="Độ mạnh mật khẩu">
+                    <span></span><span></span><span></span><span></span>
+                  </div>
+                  <p class="password-requirement">Có chữ hoa, chữ thường và chữ số.</p>
+                  <p class="profile-field-error" data-profile-error="newPassword"></p>
+                </div>
+
+                <div class="engineer-field">
+                  <label for="profileConfirmPassword">Xác nhận mật khẩu mới</label>
+                  <div class="engineer-input-wrap password-wrap">
+                    <span class="field-code" aria-hidden="true">CHK</span>
+                    <input id="profileConfirmPassword" type="password" autocomplete="new-password" placeholder="Nhập lại mật khẩu mới" required>
+                    <button class="password-visibility" type="button" data-password-target="profileConfirmPassword" aria-label="Hiện mật khẩu">◉</button>
+                  </div>
+                  <p class="profile-field-error" data-profile-error="confirmPassword"></p>
+                </div>
+
+                <button class="engineer-button security-action" id="changePasswordButton" type="submit">
+                  <span>Cập nhật mật khẩu</span><b aria-hidden="true">↻</b>
+                </button>
+                <p class="session-warning"><span aria-hidden="true">!</span> Bạn sẽ cần đăng nhập lại trên mọi thiết bị sau khi đổi mật khẩu.</p>
+              </form>
+            </article>
+
+            <article class="engineer-note">
+              <span class="note-icon" aria-hidden="true">⌁</span>
+              <div>
+                <strong>ENGINEER NOTE / 001</strong>
+                <p>Không chia sẻ CCCD, email hoặc mật khẩu qua kênh không được bảo mật.</p>
+              </div>
+            </article>
+          </aside>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script defer src="/js/giao_tiep_api/http.js"></script>
+  <script defer src="/js/giao_tiep_api/xac_thuc.api.js"></script>
+  <script defer src="/js/giao_tiep_api/canh_bao.api.js"></script>
+  <script defer src="/js/giao_tiep_api/nguoi_dung.api.js"></script>
+  <script defer src="/js/ngon_ngu.js"></script>
+  <script defer src="/js/thanh_phan/thong_bao.js"></script>
+  <script defer src="/js/thanh_phan/thanh_ben.js"></script>
+  <script defer src="/js/dinh_tuyen.js"></script>
+  <script defer src="/js/chinh.js"></script>
+  <script defer src="/js/chuc_nang/ho_so.js"></script>
+</body>
+</html>

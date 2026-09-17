@@ -64,6 +64,7 @@ app.get('/motors/:id', requirePageAuth, sendPage('chi_tiet_dong_co.html'));
 app.get('/alerts', requirePageAuth, sendPage('canh_bao.html'));
 app.get('/dataset', requirePageAuth, sendPage('du_lieu.html'));
 app.get('/calibration', requirePageAuth, sendPage('hieu_chuan.html'));
+app.get('/profile', requirePageAuth, sendPage('ho_so.html'));
 app.get('/settings', requirePageAuth, sendPage('cai_dat.html'));
 
 app.use(notFound);

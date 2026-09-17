@@ -5,6 +5,7 @@
     ['calibration', '/calibration', '≡', 'Calibration'],
     ['alerts', '/alerts', '♢', 'Alerts'],
     ['dataset', '/dataset', '▤', 'Dataset'],
+    ['profile', '/profile', '◎', 'Hồ sơ'],
     ['settings', '/settings', '⚙', 'Settings'],
   ];
 

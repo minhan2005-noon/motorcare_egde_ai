@@ -55,7 +55,7 @@ registerForm.addEventListener('submit', async (event) => {
   window.AuthUi.setLoading(registerButton, true, 'Đang tạo tài khoản...');
   try {
     await window.AuthApi.register({ fullName, email, password });
-    location.assign('/dashboard');
+    location.assign('/profile?welcome=1');
   } catch (error) {
     window.AuthUi.setAlert(registerAlert, error.message);
   } finally {

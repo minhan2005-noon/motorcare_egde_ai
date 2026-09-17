@@ -31,7 +31,7 @@ loginForm.addEventListener('submit', async (event) => {
     const returnTo = new URLSearchParams(location.search).get('returnTo');
     const destination = returnTo?.startsWith('/') && !returnTo.startsWith('//')
       ? returnTo
-      : '/dashboard';
+      : '/profile';
     location.assign(destination);
   } catch (error) {
     window.AuthUi.setAlert(loginAlert, error.message);
