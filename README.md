@@ -27,8 +27,13 @@ nằm trong `ma_nguon/may_chu/co_so_du_lieu/chuyen_doi`.
 ```bash
 npm run dev
 npm test
+npm run db:check
 npm run db:seed
 ```
+
+`db:check` chạy migration còn thiếu, ping database và đối chiếu số migration
+đã áp dụng với mã nguồn. Endpoint `/api/health/ready` cung cấp cùng trạng thái
+cho hệ thống triển khai; `/api/health` chỉ là liveness nhẹ.
 
 ## API
 
@@ -88,9 +93,6 @@ Source từ bộ MotorCare trên Google Drive đã được sắp vào các khu 
   tạo các cửa sổ đặc trưng một giây.
 - `ma_nguon/tri_tue_nhan_tao/du_lieu`: mô tả dữ liệu, thứ tự đặc trưng và bản
   tóm tắt bộ dữ liệu đã tiền xử lý.
-- `ma_nguon/minh_hoa/motorcare_v1_web_demo`: dashboard LAN độc lập nhận kết quả
-  suy luận trực tiếp từ ESP32.
-
 Để chạy pipeline tiền xử lý:
 
 ```bash
@@ -98,6 +100,22 @@ python3 -m pip install -r ma_nguon/tri_tue_nhan_tao/requirements.txt
 python3 ma_nguon/tri_tue_nhan_tao/tien_ich/bo_du_lieu.py original.zip \
   --out ma_nguon/tri_tue_nhan_tao/du_lieu
 ```
+
+Huấn luyện, đánh giá và chạy suy luận bằng pipeline Python:
+
+```bash
+python3 ma_nguon/tri_tue_nhan_tao/huan_luyen/huan_luyen_mo_hinh.py \
+  ma_nguon/tri_tue_nhan_tao/du_lieu/motorcare_features_1s.csv \
+  --firmware-header ma_nguon/phan_mem_nhung/model_weights.h
+python3 ma_nguon/tri_tue_nhan_tao/huan_luyen/danh_gia_mo_hinh.py \
+  ma_nguon/tri_tue_nhan_tao/mo_hinh/motorcare_mlp.joblib \
+  ma_nguon/tri_tue_nhan_tao/du_lieu/motorcare_features_1s.csv
+python3 ma_nguon/kiem_thu/tri_tue_nhan_tao/dac_trung.kiem_thu.py
+```
+
+Pipeline chia train/test theo `session_id`, lưu model cùng metadata/metrics và
+có thể xuất trực tiếp trọng số C++ cho firmware. Không chia ngẫu nhiên theo
+cửa sổ vì cách đó làm rò rỉ dữ liệu giữa các đoạn của cùng buổi đo.
 
 Dashboard Express nhận trực tiếp trạng thái AI và xác suất kẹt tải, rung bất
 thường, sụt áp từ ESP32 qua `POST /api/devices/readings`. Kết quả được lưu cùng

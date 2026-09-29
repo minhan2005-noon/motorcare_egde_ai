@@ -19,6 +19,24 @@ function migrationFiles() {
     .sort();
 }
 
+async function getDatabaseStatus() {
+  const db = await initializeDatabase();
+  const ping = await db.prepare('SELECT 1 AS ok').get();
+  const applied = await db.prepare(`
+    SELECT COUNT(*) AS count, MAX(filename) AS latest
+    FROM schema_migrations
+  `).get();
+  const expected = migrationFiles();
+
+  return {
+    ready: Number(ping?.ok) === 1 && Number(applied?.count) === expected.length,
+    adapter: db.kind,
+    appliedMigrations: Number(applied?.count || 0),
+    expectedMigrations: expected.length,
+    latestMigration: applied?.latest || null,
+  };
+}
+
 function runLocalMigrations(client) {
   client.exec(`
     CREATE TABLE IF NOT EXISTS schema_migrations (
@@ -178,4 +196,5 @@ module.exports = {
   initializeDatabase,
   closeDatabase,
   runMigrations,
+  getDatabaseStatus,
 };

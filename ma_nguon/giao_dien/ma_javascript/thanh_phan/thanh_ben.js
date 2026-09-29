@@ -33,7 +33,7 @@
       </a>
       <nav class="sidebar-nav" aria-label="Điều hướng chính">
         ${navigation.map(([key, href, symbol, label]) => `
-          <a class="nav-link ${key === activePage ? 'active' : ''}" href="${href}">
+          <a class="nav-link ${key === activePage ? 'active' : ''}" href="${href}" title="${t(label)}" aria-label="${t(label)}">
             <span class="nav-symbol" aria-hidden="true">${symbol}</span>
             <span>${t(label)}</span>
             ${key === 'alerts' ? '<span class="nav-count" id="navAlertCount">0</span>' : ''}

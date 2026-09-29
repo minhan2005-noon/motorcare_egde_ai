@@ -1,3 +1,5 @@
 numpy
 pandas
 openpyxl
+joblib
+scikit-learn

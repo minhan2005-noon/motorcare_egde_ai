@@ -6,8 +6,8 @@
   <meta name="description" content="Dashboard giám sát motor MotorCare Edge AI">
   <title>Dashboard · MotorCare Edge AI</title>
   <link rel="stylesheet" href="/css/ung_dung.css">
-  <link rel="stylesheet" href="/css/trang_bang_dieu_khien.css">
   <link rel="stylesheet" href="/css/nang_cap_giao_dien.css">
+  <link rel="stylesheet" href="/css/trang_bang_dieu_khien.css">
 </head>
 <body data-page="dashboard">
   <div class="app-shell">
@@ -17,8 +17,9 @@
         <div class="topbar-actions">
           <button class="icon-button mobile-menu" id="mobileMenuButton" type="button" aria-label="Mở menu">☰</button>
           <div class="topbar-title">
-            <h1>Tổng quan hôm nay</h1>
-            <p>Theo dõi sức khỏe thiết bị và những việc cần bạn chú ý</p>
+            <span class="dashboard-kicker">MotorCare · Live monitor</span>
+            <h1>Dashboard</h1>
+            <p>Theo dõi sức khỏe thiết bị và dữ liệu cảm biến theo thời gian thực</p>
           </div>
         </div>
         <div class="topbar-actions">
@@ -48,7 +49,7 @@
             <div>
               <span class="connection-label">Kết nối thiết bị</span>
               <strong id="connectionStatusText">Chưa kết nối</strong>
-              <small id="commandLastUpdated">Chưa có dữ liệu mới</small>
+              <small><span id="selectedDeviceCode">—</span> · <span id="commandLastUpdated">Chưa có dữ liệu mới</span> · <span id="sceneRefreshRate">10s</span></small>
             </div>
           </div>
 
@@ -56,49 +57,7 @@
           <button class="button primary" id="connectionButton" type="button">Kết nối</button>
         </section>
 
-        <section class="machine-ribbon" aria-labelledby="liveMotorTitle">
-          <div class="machine-ribbon-copy">
-            <span class="eyebrow"><span class="live-dot" aria-hidden="true"></span> Giám sát trực tiếp</span>
-            <h2 id="liveMotorTitle"><span id="selectedMotorName">Trạng thái vận hành</span></h2>
-            <p id="selectedMotorLocation">Quan sát nhanh thiết bị và theo dõi dữ liệu cảm biến theo thời gian thực.</p>
-            <div class="machine-facts" aria-label="Thông tin luồng dữ liệu">
-              <span><strong id="selectedDeviceCode">—</strong> mã thiết bị</span>
-              <span><strong>4</strong> cảm biến</span>
-              <span><strong id="sceneRefreshRate">10s</strong> làm mới</span>
-            </div>
-          </div>
-          <div class="motor-stage scene-fallback" id="motor3dScene" role="img" aria-label="Mô hình động cơ ba chiều đang quay">
-            <canvas id="motor3dCanvas"></canvas>
-            <div class="motor-fallback" aria-hidden="true">
-              <span class="fallback-shaft"></span>
-              <span class="fallback-body"></span>
-              <span class="fallback-fan">
-                <i></i><i></i><i></i><i></i>
-              </span>
-            </div>
-            <span class="scene-fallback-label">MotorCare Drive</span>
-          </div>
-        </section>
-
         <div class="dashboard-grid" id="dashboardGrid">
-          <section class="overview-top">
-            <article class="card health-card">
-              <div class="health-card-heading">
-                <span>
-                  <small>Tình trạng tổng thể</small>
-                  <h2>Sức khỏe motor</h2>
-                </span>
-                <a href="/alerts" aria-label="Xem cảnh báo">↗</a>
-              </div>
-              <div class="health-gauge" id="healthGauge">
-                <strong id="healthScore">0<small>%</small></strong>
-                <span id="healthStatus">Chưa có dữ liệu</span>
-              </div>
-              <p class="health-meta">Cập nhật: <span id="lastUpdated">Chưa có</span></p>
-            </article>
-            <section class="metric-row" id="metricCards" aria-label="Chỉ số cảm biến"></section>
-          </section>
-
           <section class="dashboard-main">
             <section class="charts-row">
               <article class="card chart-card">
@@ -122,6 +81,24 @@
                 </div>
                 <canvas id="temperatureChart"></canvas>
               </article>
+            </section>
+
+            <section class="overview-top">
+              <article class="card health-card">
+                <div class="health-card-heading">
+                  <span>
+                    <small>Tình trạng tổng thể</small>
+                    <h2>Sức khỏe thiết bị</h2>
+                  </span>
+                  <a href="/alerts" aria-label="Xem cảnh báo">↗</a>
+                </div>
+                <div class="health-gauge" id="healthGauge">
+                  <strong id="healthScore">0<small>%</small></strong>
+                  <span id="healthStatus">Chưa có dữ liệu</span>
+                </div>
+                <p class="health-meta">Cập nhật: <span id="lastUpdated">Chưa có</span></p>
+              </article>
+              <section class="metric-row" id="metricCards" aria-label="Chỉ số cảm biến"></section>
             </section>
 
             <article class="card alerts-card">
@@ -247,7 +224,6 @@
   <script defer src="/js/ngon_ngu.js"></script>
   <script defer src="/js/thanh_phan/thong_bao.js"></script>
   <script defer src="/js/thanh_phan/thanh_ben.js"></script>
-  <script type="module" src="/js/thanh_phan/canh_dong_co_3d.mjs"></script>
   <script defer src="/js/tien_ich/dinh_dang.js"></script>
   <script defer src="/js/dinh_tuyen.js"></script>
   <script defer src="/js/chinh.js"></script>

@@ -10,7 +10,6 @@ function mapSettings(row) {
     density: row.density,
     highContrast: Boolean(row.high_contrast),
     reducedMotion: Boolean(row.reduced_motion),
-    enable3d: Boolean(row.enable_3d),
     refreshInterval: row.refresh_interval,
     updatedAt: row.updated_at,
   };
@@ -29,7 +28,7 @@ async function update(userId, settings) {
     UPDATE user_settings
     SET language = ?, theme = ?, email_notifications = ?,
         browser_notifications = ?, font_scale = ?, density = ?,
-        high_contrast = ?, reduced_motion = ?, enable_3d = ?,
+        high_contrast = ?, reduced_motion = ?,
         refresh_interval = ?, updated_at = ?
     WHERE user_id = ?
   `).run(
@@ -41,7 +40,6 @@ async function update(userId, settings) {
     settings.density,
     Number(settings.highContrast),
     Number(settings.reducedMotion),
-    Number(settings.enable3d),
     settings.refreshInterval,
     now,
     userId,

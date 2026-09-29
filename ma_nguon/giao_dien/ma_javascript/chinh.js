@@ -9,7 +9,6 @@
       density: 'comfortable',
       highContrast: false,
       reducedMotion: false,
-      enable3d: true,
       refreshInterval: 10,
     },
   };
@@ -27,7 +26,6 @@
     root.dataset.density = settings.density;
     root.dataset.contrast = settings.highContrast ? 'high' : 'normal';
     root.dataset.motion = settings.reducedMotion ? 'reduced' : 'full';
-    root.dataset.scene3d = settings.enable3d ? 'enabled' : 'disabled';
     root.style.colorScheme = resolvedTheme;
 
     if (persist) {

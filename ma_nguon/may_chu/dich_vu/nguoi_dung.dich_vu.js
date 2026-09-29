@@ -44,7 +44,6 @@ async function updateSettings(userId, payload) {
     density: payload.density ?? current.density,
     highContrast: payload.highContrast ?? current.highContrast,
     reducedMotion: payload.reducedMotion ?? current.reducedMotion,
-    enable3d: payload.enable3d ?? current.enable3d,
     refreshInterval: Number(payload.refreshInterval ?? current.refreshInterval),
   };
 
@@ -64,7 +63,7 @@ async function updateSettings(userId, payload) {
     throw httpError(400, 'Chu kỳ làm mới không hợp lệ');
   }
 
-  ['emailNotifications', 'browserNotifications', 'highContrast', 'reducedMotion', 'enable3d']
+  ['emailNotifications', 'browserNotifications', 'highContrast', 'reducedMotion']
     .forEach((key) => {
       if (typeof settings[key] !== 'boolean') {
         throw httpError(400, 'Giá trị tùy chọn không hợp lệ');

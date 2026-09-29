@@ -19,7 +19,6 @@ test('appearance and accessibility settings are persisted', async () => {
     density: 'compact',
     highContrast: true,
     reducedMotion: true,
-    enable3d: false,
     refreshInterval: 30,
   });
 
@@ -31,7 +30,6 @@ test('appearance and accessibility settings are persisted', async () => {
       density: updated.density,
       highContrast: updated.highContrast,
       reducedMotion: updated.reducedMotion,
-      enable3d: updated.enable3d,
       refreshInterval: updated.refreshInterval,
     },
     {
@@ -41,7 +39,6 @@ test('appearance and accessibility settings are persisted', async () => {
       density: 'compact',
       highContrast: true,
       reducedMotion: true,
-      enable3d: false,
       refreshInterval: 30,
     },
   );

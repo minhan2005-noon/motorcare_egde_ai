@@ -43,7 +43,6 @@
       browserNotifications: document.getElementById('browserNotifications').checked,
       highContrast: document.getElementById('highContrast').checked,
       reducedMotion: document.getElementById('reducedMotion').checked,
-      enable3d: document.getElementById('enable3d').checked,
       refreshInterval: Number(document.getElementById('refreshIntervalSelect').value),
     };
   }
@@ -57,7 +56,6 @@
     document.getElementById('browserNotifications').checked = settings.browserNotifications;
     document.getElementById('highContrast').checked = settings.highContrast;
     document.getElementById('reducedMotion').checked = settings.reducedMotion;
-    document.getElementById('enable3d').checked = settings.enable3d;
     document.getElementById('refreshIntervalSelect').value = String(settings.refreshInterval);
   }
 

@@ -1,5 +1,5 @@
 {
-  "name": "motorcare_egde_ai",
+  "name": "motorcare-edge-ai",
   "version": "1.0.0",
   "description": "Motor monitoring dashboard and API for MotorCare Edge AI",
   "homepage": "https://github.com/minhan2005-noon/motorcare_egde_ai#readme",
@@ -11,7 +11,6 @@
     "url": "git+https://github.com/minhan2005-noon/motorcare_egde_ai.git"
   },
   "license": "MIT",
-  "author": "3 tk gay",
   "type": "commonjs",
   "main": "ma_nguon/may_chu/may_chu.js",
   "engines": {
@@ -21,6 +20,7 @@
     "test": "NODE_ENV=test DB_PATH=:memory: node --test ma_nguon/kiem_thu/may_chu/*.kiem_thu.js",
     "start": "node ma_nguon/may_chu/may_chu.js",
     "dev": "nodemon ma_nguon/may_chu/may_chu.js",
+    "db:check": "node scripts/kiem_tra_co_so_du_lieu.js",
     "db:seed": "node ma_nguon/may_chu/co_so_du_lieu/tao_du_lieu_mau.js",
     "vercel-build": "node scripts/chuan_bi_vercel.js"
   },
@@ -28,8 +28,9 @@
     "@libsql/client": "^0.18.0",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "nodemailer": "^9.0.3",
-    "nodemon": "^3.1.14",
-    "three": "^0.185.1"
+    "nodemailer": "^10.0.12"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
   }
 }

@@ -6,6 +6,7 @@ const notFound = require('./trung_gian/khong_tim_thay.trung_gian');
 const errorMiddleware = require('./trung_gian/loi.trung_gian');
 const timeoutMiddleware = require('./trung_gian/het_thoi_gian.trung_gian');
 const securityMiddleware = require('./trung_gian/bao_mat.trung_gian');
+const auditMiddleware = require('./trung_gian/nhat_ky.trung_gian');
 const corsMiddleware = require('./cau_hinh/cors.cau_hinh');
 const appConfig = require('./cau_hinh/ung_dung.cau_hinh');
 const {
@@ -33,14 +34,9 @@ app.use(express.json({ limit: '256kb' }));
 app.use(express.urlencoded({ extended: false, limit: '64kb' }));
 app.use('/css', express.static(path.join(webRoot, 'kieu_dang'), { index: false }));
 app.use('/js', express.static(path.join(webRoot, 'ma_javascript'), { index: false }));
-app.get('/vendor/three.module.min.js', (req, res) => {
-  res.sendFile(path.join(appConfig.projectRoot, 'node_modules/three/build/three.module.min.js'));
-});
-app.get('/vendor/three.core.min.js', (req, res) => {
-  res.sendFile(path.join(appConfig.projectRoot, 'node_modules/three/build/three.core.min.js'));
-});
 app.get('/favicon.ico', (req, res) => res.sendStatus(204));
 app.use(loadAuth);
+app.use('/api', auditMiddleware);
 
 app.use('/api', routes);
 

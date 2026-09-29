@@ -1,7 +1,7 @@
 (function createRouter() {
   const pageAssets = {
     dashboard: {
-      scripts: ['/js/tien_ich/dinh_dang.js', '/js/giao_tiep_api/dong_co.api.js', '/js/thanh_phan/canh_dong_co_3d.mjs', '/js/chuc_nang/bang_dieu_khien.js'],
+      scripts: ['/js/tien_ich/dinh_dang.js', '/js/giao_tiep_api/dong_co.api.js', '/js/chuc_nang/bang_dieu_khien.js'],
       styles: ['/css/trang_bang_dieu_khien.css'],
     },
     motors: {

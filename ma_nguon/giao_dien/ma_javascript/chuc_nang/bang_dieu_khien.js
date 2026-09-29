@@ -1,10 +1,10 @@
 (function createDashboardPage() {
   const colors = {
-    vibration: ['#1d6ef2', '#eaf2ff', '≈'],
-    current: ['#0b9f62', '#e8f7f0', '↯'],
-    temperature: ['#e86f20', '#fff0e6', '°'],
-    sound: ['#7357d9', '#f0ebff', '≋'],
-    voltage: ['#7357d9', '#f0ebff', 'V'],
+    vibration: ['#36c8ff', 'rgba(54, 200, 255, 0.12)', '≈'],
+    current: ['#44efad', 'rgba(68, 239, 173, 0.12)', '↯'],
+    temperature: ['#ff9f43', 'rgba(255, 159, 67, 0.12)', '°'],
+    sound: ['#a78bfa', 'rgba(167, 139, 250, 0.12)', '≋'],
+    voltage: ['#a78bfa', 'rgba(167, 139, 250, 0.12)', 'V'],
   };
   let selectedMotor;
   let refreshTimer;
@@ -38,7 +38,7 @@
     const span = max - min || 1;
 
     if (!compact) {
-      ctx.strokeStyle = '#e4eaf0';
+      ctx.strokeStyle = 'rgba(154, 176, 204, 0.12)';
       ctx.lineWidth = 1;
       for (let index = 0; index < 4; index += 1) {
         const y = padding + ((height - padding * 2) / 3) * index;
@@ -54,19 +54,50 @@
       y: padding + (1 - ((value ?? min) - min) / span) * (height - padding * 2),
     }));
 
-    ctx.beginPath();
+    const trace = new Path2D();
     points.forEach((point, index) => {
-      if (index === 0) ctx.moveTo(point.x, point.y);
-      else ctx.lineTo(point.x, point.y);
+      if (index === 0) trace.moveTo(point.x, point.y);
+      else {
+        const previous = points[index - 1];
+        const midpoint = (previous.x + point.x) / 2;
+        trace.bezierCurveTo(midpoint, previous.y, midpoint, point.y, point.x, point.y);
+      }
     });
+
+    if (!compact) {
+      const fill = ctx.createLinearGradient(0, padding, 0, height - padding);
+      fill.addColorStop(0, `${color}55`);
+      fill.addColorStop(1, `${color}00`);
+      const area = new Path2D(trace);
+      area.lineTo(points[points.length - 1].x, height - padding);
+      area.lineTo(points[0].x, height - padding);
+      area.closePath();
+      ctx.fillStyle = fill;
+      ctx.fill(area);
+    }
+
     ctx.strokeStyle = color;
     ctx.lineWidth = compact ? 2 : 2.5;
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
-    ctx.stroke();
+    ctx.shadowColor = color;
+    ctx.shadowBlur = compact ? 5 : 12;
+    ctx.stroke(trace);
+    ctx.shadowBlur = 0;
+
+    if (!compact) {
+      const latest = points[points.length - 1];
+      ctx.beginPath();
+      ctx.arc(latest.x, latest.y, 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffffff';
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 14;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
 
     if (!compact && labels.length) {
-      ctx.fillStyle = '#718295';
+      ctx.fillStyle = '#7f91aa';
       ctx.font = '10px sans-serif';
       [0, Math.floor(labels.length / 2), labels.length - 1].forEach((index) => {
         ctx.fillText(labels[index] || '', points[index].x - 14, height - 7);
@@ -79,14 +110,20 @@
     container.innerHTML = metrics.map((item) => {
       const [color, soft, icon] = colors[item.id];
       const trend = item.change > 0 ? `+${item.change}` : item.change;
+      const limits = { vibration: 10, current: 20, temperature: 100, sound: 100, voltage: 240 };
+      const progress = Math.min(100, Math.max(8, (Number(item.value) / (limits[item.id] || 100)) * 100));
       return `
-        <article class="card metric-card" style="--metric-color:${color};--metric-soft:${soft}">
-          <span class="metric-icon" aria-hidden="true">${icon}</span>
+        <article class="card metric-card" style="--metric-color:${color};--metric-soft:${soft};--metric-progress:${progress}">
+          <div class="metric-ring">
+            <div class="metric-ring-inner">
+              <span class="metric-icon" aria-hidden="true">${icon}</span>
+              <p class="metric-value">
+                <strong>${window.MotorCareFormat.number(item.value)}</strong>
+                <span>${window.MotorCareFormat.escapeHtml(item.unit)}</span>
+              </p>
+            </div>
+          </div>
           <p class="metric-label">${window.MotorCareFormat.escapeHtml(window.MotorCareI18n?.t(item.label) || item.label)}</p>
-          <p class="metric-value">
-            <strong>${window.MotorCareFormat.number(item.value)}</strong>
-            <span>${window.MotorCareFormat.escapeHtml(item.unit)}</span>
-          </p>
           <div class="metric-trend">
             <span><b>${trend || 0}%</b> trong chuỗi đo</span>
             <canvas id="${item.id}Spark"></canvas>
@@ -209,8 +246,6 @@
     status.textContent = 'Chưa kết nối';
     document.getElementById('connectionStatusText').textContent = 'Chưa kết nối';
     document.getElementById('commandLastUpdated').textContent = 'Chưa có dữ liệu mới';
-    document.getElementById('selectedMotorName').textContent = 'Trạng thái vận hành';
-    document.getElementById('selectedMotorLocation').textContent = 'Chọn một motor để bắt đầu theo dõi dữ liệu cảm biến.';
     document.getElementById('selectedDeviceCode').textContent = '—';
     const connectionButton = document.getElementById('connectionButton');
     connectionButton.disabled = true;
@@ -334,8 +369,6 @@
       document.getElementById('commandLastUpdated').textContent = data.connection.lastUpdated
         ? `Cập nhật ${window.MotorCareFormat.dateTime(data.connection.lastUpdated)}`
         : 'Chưa có dữ liệu mới';
-      document.getElementById('selectedMotorName').textContent = selectedMotor.name;
-      document.getElementById('selectedMotorLocation').textContent = selectedMotor.location || 'Chưa cập nhật vị trí thiết bị';
       document.getElementById('selectedDeviceCode').textContent = data.connection.deviceId || '—';
       const button = document.getElementById('connectionButton');
       button.disabled = false;
@@ -371,7 +404,6 @@
     const resetRequested = new URLSearchParams(location.search).get('reset') === '1';
     if (resetRequested) resetDashboardAfterDeletion();
     else loadDashboard();
-    window.MotorCareMotorScene?.mount();
     const refreshInterval = Number(window.MotorCareApp?.settings.refreshInterval || 10);
     const sceneRate = document.getElementById('sceneRefreshRate');
     if (sceneRate) sceneRate.textContent = `${refreshInterval}s`;
@@ -431,7 +463,6 @@
   document.addEventListener('motorcare:settings-changed', () => {
     if (document.body.dataset.page !== 'dashboard') return;
     clearInterval(refreshTimer);
-    window.MotorCareMotorScene?.mount();
     const refreshInterval = Number(window.MotorCareApp?.settings.refreshInterval || 10);
     const sceneRate = document.getElementById('sceneRefreshRate');
     if (sceneRate) sceneRate.textContent = `${refreshInterval}s`;
