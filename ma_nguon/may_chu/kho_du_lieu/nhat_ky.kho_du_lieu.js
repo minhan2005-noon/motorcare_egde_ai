@@ -1,7 +1,7 @@
 const { getDatabase } = require('../co_so_du_lieu/ket_noi');
 
 async function record(entry) {
-  getDatabase().prepare(`
+  await getDatabase().prepare(`
     INSERT INTO audit_logs (
       user_id, action, entity_type, entity_id,
       metadata_json, ip_address, created_at

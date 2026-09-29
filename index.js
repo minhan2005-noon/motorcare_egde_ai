@@ -6,7 +6,7 @@ if (process.env.VERCEL && !process.env.DB_PATH) {
 }
 
 const motorCareApp = require('./ma_nguon/may_chu/ung_dung');
-const { getDatabase } = require('./ma_nguon/may_chu/co_so_du_lieu/ket_noi');
+const { initializeDatabase } = require('./ma_nguon/may_chu/co_so_du_lieu/ket_noi');
 const { seedDatabase } = require('./ma_nguon/may_chu/co_so_du_lieu/tao_du_lieu_mau');
 
 const app = express();
@@ -15,7 +15,7 @@ let initialization;
 function initialize() {
   if (!initialization) {
     initialization = Promise.resolve()
-      .then(() => getDatabase())
+      .then(() => initializeDatabase())
       .then(() => (process.env.SKIP_SEED === '1' ? undefined : seedDatabase()));
   }
   return initialization;

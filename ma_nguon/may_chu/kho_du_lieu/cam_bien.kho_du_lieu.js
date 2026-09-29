@@ -27,7 +27,7 @@ function mapReading(row) {
 }
 
 async function create(reading) {
-  const result = getDatabase().prepare(`
+  const result = await getDatabase().prepare(`
     INSERT INTO sensor_readings (
       motor_id, recorded_at, vibration_rms, current_rms,
       temperature, sound_level, rpm, acceleration_rms_g, voltage_v,
@@ -56,13 +56,13 @@ async function create(reading) {
 }
 
 async function findById(id) {
-  return mapReading(getDatabase().prepare(
+  return mapReading(await getDatabase().prepare(
     'SELECT * FROM sensor_readings WHERE id = ?',
   ).get(id));
 }
 
 async function findLatest(motorId) {
-  return mapReading(getDatabase().prepare(`
+  return mapReading(await getDatabase().prepare(`
     SELECT * FROM sensor_readings
     WHERE motor_id = ?
     ORDER BY recorded_at DESC
@@ -86,7 +86,7 @@ async function findByMotor(motorId, options = {}) {
   }
 
   values.push(limit, offset);
-  const rows = getDatabase().prepare(`
+  const rows = await getDatabase().prepare(`
     SELECT * FROM sensor_readings
     WHERE ${clauses.join(' AND ')}
     ORDER BY recorded_at DESC
@@ -96,13 +96,13 @@ async function findByMotor(motorId, options = {}) {
 }
 
 async function countByMotor(motorId) {
-  return getDatabase().prepare(
+  return (await getDatabase().prepare(
     'SELECT COUNT(*) AS count FROM sensor_readings WHERE motor_id = ?',
-  ).get(motorId).count;
+  ).get(motorId)).count;
 }
 
 async function findSeries(motorId, limit = 30) {
-  const rows = getDatabase().prepare(`
+  const rows = await getDatabase().prepare(`
     SELECT * FROM (
       SELECT * FROM sensor_readings
       WHERE motor_id = ?
@@ -114,7 +114,7 @@ async function findSeries(motorId, limit = 30) {
 }
 
 async function averages(motorId, sampleCount = 30) {
-  return getDatabase().prepare(`
+  return await getDatabase().prepare(`
     SELECT
       COUNT(*) AS sample_count,
       AVG(vibration_rms) AS vibration_baseline,

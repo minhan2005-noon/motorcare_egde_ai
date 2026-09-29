@@ -18,7 +18,7 @@ function mapSession(row) {
 }
 
 async function create(session) {
-  getDatabase().prepare(`
+  await getDatabase().prepare(`
     INSERT INTO sessions (
       id, user_id, token_hash, expires_at, ip_address, user_agent, created_at
     ) VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -34,7 +34,7 @@ async function create(session) {
 }
 
 async function findValidByTokenHash(tokenHash) {
-  const row = getDatabase().prepare(`
+  const row = await getDatabase().prepare(`
     SELECT * FROM sessions
     WHERE token_hash = ? AND expires_at > ?
     LIMIT 1
@@ -43,21 +43,21 @@ async function findValidByTokenHash(tokenHash) {
 }
 
 async function removeByTokenHash(tokenHash) {
-  return getDatabase().prepare(
+  return (await getDatabase().prepare(
     'DELETE FROM sessions WHERE token_hash = ?',
-  ).run(tokenHash).changes > 0;
+  ).run(tokenHash)).changes > 0;
 }
 
 async function removeAllForUser(userId) {
-  return getDatabase().prepare(
+  return (await getDatabase().prepare(
     'DELETE FROM sessions WHERE user_id = ?',
-  ).run(userId).changes;
+  ).run(userId)).changes;
 }
 
 async function removeExpired() {
-  return getDatabase().prepare(
+  return (await getDatabase().prepare(
     'DELETE FROM sessions WHERE expires_at <= ?',
-  ).run(new Date().toISOString()).changes;
+  ).run(new Date().toISOString())).changes;
 }
 
 module.exports = {

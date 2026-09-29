@@ -17,7 +17,7 @@ function mapSettings(row) {
 }
 
 async function findByUserId(userId) {
-  const row = getDatabase().prepare(
+  const row = await getDatabase().prepare(
     'SELECT * FROM user_settings WHERE user_id = ?',
   ).get(userId);
   return row ? mapSettings(row) : null;
@@ -25,7 +25,7 @@ async function findByUserId(userId) {
 
 async function update(userId, settings) {
   const now = new Date().toISOString();
-  getDatabase().prepare(`
+  await getDatabase().prepare(`
     UPDATE user_settings
     SET language = ?, theme = ?, email_notifications = ?,
         browser_notifications = ?, font_scale = ?, density = ?,

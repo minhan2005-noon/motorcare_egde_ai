@@ -21,7 +21,7 @@ function mapCalibration(row) {
 }
 
 async function create(calibration) {
-  getDatabase().prepare(`
+  await getDatabase().prepare(`
     INSERT INTO calibrations (
       id, motor_id, created_by, sample_count, vibration_baseline,
       current_baseline, temperature_baseline, sound_baseline,
@@ -44,22 +44,22 @@ async function create(calibration) {
 }
 
 async function findById(id) {
-  return mapCalibration(getDatabase().prepare(
+  return mapCalibration(await getDatabase().prepare(
     'SELECT * FROM calibrations WHERE id = ?',
   ).get(id));
 }
 
 async function findByMotor(motorId, limit = 20) {
-  return getDatabase().prepare(`
+  return (await getDatabase().prepare(`
     SELECT * FROM calibrations
     WHERE motor_id = ?
     ORDER BY created_at DESC
     LIMIT ?
-  `).all(motorId, limit).map(mapCalibration);
+  `).all(motorId, limit)).map(mapCalibration);
 }
 
 async function findLatest(motorId) {
-  return mapCalibration(getDatabase().prepare(`
+  return mapCalibration(await getDatabase().prepare(`
     SELECT * FROM calibrations
     WHERE motor_id = ?
     ORDER BY created_at DESC

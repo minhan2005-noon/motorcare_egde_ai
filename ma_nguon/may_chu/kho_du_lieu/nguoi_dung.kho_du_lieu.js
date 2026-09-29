@@ -28,7 +28,7 @@ function mapUser(row, { includePassword = false } = {}) {
 
 async function create(user) {
   const db = getDatabase();
-  db.prepare(`
+  await db.prepare(`
     INSERT INTO users (
       id, email, full_name, password_hash, role, is_active,
       failed_login_attempts, created_at, updated_at
@@ -43,7 +43,7 @@ async function create(user) {
     user.updatedAt,
   );
 
-  db.prepare(`
+  await db.prepare(`
     INSERT INTO user_settings (
       user_id, language, theme, email_notifications,
       browser_notifications, created_at, updated_at
@@ -54,24 +54,24 @@ async function create(user) {
 }
 
 async function findById(id) {
-  const row = getDatabase().prepare('SELECT * FROM users WHERE id = ?').get(id);
+  const row = await getDatabase().prepare('SELECT * FROM users WHERE id = ?').get(id);
   return mapUser(row, { includePassword: true });
 }
 
 async function findPublicById(id) {
-  const row = getDatabase().prepare('SELECT * FROM users WHERE id = ?').get(id);
+  const row = await getDatabase().prepare('SELECT * FROM users WHERE id = ?').get(id);
   return mapUser(row);
 }
 
 async function findByEmail(email) {
-  const row = getDatabase()
+  const row = await getDatabase()
     .prepare('SELECT * FROM users WHERE email = ? COLLATE NOCASE')
     .get(email);
   return mapUser(row, { includePassword: true });
 }
 
 async function recordFailedLogin(id, attempts, lockedUntil) {
-  getDatabase().prepare(`
+  await getDatabase().prepare(`
     UPDATE users
     SET failed_login_attempts = ?, locked_until = ?, updated_at = ?
     WHERE id = ?
@@ -80,7 +80,7 @@ async function recordFailedLogin(id, attempts, lockedUntil) {
 
 async function recordSuccessfulLogin(id) {
   const now = new Date().toISOString();
-  getDatabase().prepare(`
+  await getDatabase().prepare(`
     UPDATE users
     SET failed_login_attempts = 0, locked_until = NULL,
         last_login_at = ?, updated_at = ?
@@ -90,7 +90,7 @@ async function recordSuccessfulLogin(id) {
 
 async function updateProfile(id, patch) {
   const now = new Date().toISOString();
-  getDatabase().prepare(`
+  await getDatabase().prepare(`
     UPDATE users
     SET full_name = COALESCE(?, full_name),
         email = COALESCE(?, email),
@@ -101,7 +101,7 @@ async function updateProfile(id, patch) {
 }
 
 async function updatePassword(id, passwordHash) {
-  getDatabase().prepare(`
+  await getDatabase().prepare(`
     UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?
   `).run(passwordHash, new Date().toISOString(), id);
 }

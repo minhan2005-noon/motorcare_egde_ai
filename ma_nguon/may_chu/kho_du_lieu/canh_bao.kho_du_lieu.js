@@ -27,7 +27,7 @@ function mapAlert(row) {
 async function create(alert) {
   const now = new Date().toISOString();
   const id = alert.id || crypto.randomUUID();
-  getDatabase().prepare(`
+  await getDatabase().prepare(`
     INSERT INTO alerts (
       id, motor_id, type, message, severity, confidence,
       status, source, created_at, updated_at
@@ -48,7 +48,7 @@ async function create(alert) {
 }
 
 async function findById(id) {
-  const row = getDatabase().prepare(`
+  const row = await getDatabase().prepare(`
     SELECT alerts.*, motors.name AS motor_name
     FROM alerts
     JOIN motors ON motors.id = alerts.motor_id
@@ -75,28 +75,28 @@ async function findByOwner(ownerId, options = {}) {
   const limit = Math.min(Math.max(Number(options.limit) || 100, 1), 500);
   values.push(limit);
 
-  return getDatabase().prepare(`
+  return (await getDatabase().prepare(`
     SELECT alerts.*, motors.name AS motor_name
     FROM alerts
     JOIN motors ON motors.id = alerts.motor_id
     WHERE ${clauses.join(' AND ')}
     ORDER BY alerts.created_at DESC
     LIMIT ?
-  `).all(...values).map(mapAlert);
+  `).all(...values)).map(mapAlert);
 }
 
 async function countOpenByOwner(ownerId) {
-  return getDatabase().prepare(`
+  return (await getDatabase().prepare(`
     SELECT COUNT(*) AS count
     FROM alerts
     JOIN motors ON motors.id = alerts.motor_id
     WHERE motors.owner_id = ? AND alerts.status != 'resolved'
-  `).get(ownerId).count;
+  `).get(ownerId)).count;
 }
 
 async function findRecentOpen(motorId, type, minutes = 15) {
   const cutoff = new Date(Date.now() - minutes * 60 * 1000).toISOString();
-  const row = getDatabase().prepare(`
+  const row = await getDatabase().prepare(`
     SELECT alerts.*, motors.name AS motor_name
     FROM alerts
     JOIN motors ON motors.id = alerts.motor_id
@@ -113,7 +113,7 @@ async function updateStatus(id, status, userId) {
   const acknowledgedAt = status === 'acknowledged' ? now : null;
   const resolvedAt = status === 'resolved' ? now : null;
 
-  getDatabase().prepare(`
+  await getDatabase().prepare(`
     UPDATE alerts
     SET status = ?,
         acknowledged_by = CASE WHEN ? = 'acknowledged' THEN ? ELSE acknowledged_by END,

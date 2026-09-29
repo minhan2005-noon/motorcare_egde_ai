@@ -26,7 +26,7 @@ function mapMotor(row) {
 }
 
 async function create(motor) {
-  getDatabase().prepare(`
+  await getDatabase().prepare(`
     INSERT INTO motors (
       id, owner_id, device_code, name, location, model, serial_number,
       rated_power_kw, rated_voltage, rated_current, status,
@@ -54,23 +54,23 @@ async function create(motor) {
 }
 
 async function findAllByOwner(ownerId) {
-  return getDatabase().prepare(`
+  return (await getDatabase().prepare(`
     SELECT * FROM motors WHERE owner_id = ? ORDER BY created_at DESC
-  `).all(ownerId).map(mapMotor);
+  `).all(ownerId)).map(mapMotor);
 }
 
 async function findById(id) {
-  return mapMotor(getDatabase().prepare('SELECT * FROM motors WHERE id = ?').get(id));
+  return mapMotor(await getDatabase().prepare('SELECT * FROM motors WHERE id = ?').get(id));
 }
 
 async function findByDeviceCode(deviceCode) {
-  return mapMotor(getDatabase().prepare(
+  return mapMotor(await getDatabase().prepare(
     'SELECT * FROM motors WHERE device_code = ? COLLATE NOCASE',
   ).get(deviceCode));
 }
 
 async function findDeviceCredentials(deviceCode) {
-  const row = getDatabase().prepare(
+  const row = await getDatabase().prepare(
     'SELECT * FROM motors WHERE device_code = ? COLLATE NOCASE',
   ).get(deviceCode);
 
@@ -85,7 +85,7 @@ async function findDeviceCredentials(deviceCode) {
 }
 
 async function updateDeviceTokenHash(id, deviceTokenHash) {
-  getDatabase().prepare(`
+  await getDatabase().prepare(`
     UPDATE motors
     SET device_token_hash = ?, updated_at = ?
     WHERE id = ?
@@ -105,7 +105,7 @@ async function update(id, patch) {
     updatedAt: new Date().toISOString(),
   };
 
-  getDatabase().prepare(`
+  await getDatabase().prepare(`
     UPDATE motors SET
       device_code = ?, name = ?, location = ?, model = ?, serial_number = ?,
       rated_power_kw = ?, rated_voltage = ?, rated_current = ?, status = ?,
@@ -131,7 +131,7 @@ async function update(id, patch) {
 }
 
 async function remove(id) {
-  return getDatabase().prepare('DELETE FROM motors WHERE id = ?').run(id).changes > 0;
+  return (await getDatabase().prepare('DELETE FROM motors WHERE id = ?').run(id)).changes > 0;
 }
 
 module.exports = {

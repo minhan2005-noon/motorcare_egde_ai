@@ -9,3 +9,5 @@ data/*.sqlite-*
 coverage/
 public/
 .vercel/
+.env*
+!.env.example

@@ -1,6 +1,6 @@
 # MotorCare Edge AI
 
-Ứng dụng Express + SQLite để quản lý motor, dữ liệu cảm biến, cảnh báo và
+Ứng dụng Express + SQLite/Turso để quản lý motor, dữ liệu cảm biến, cảnh báo và
 dashboard vận hành. Phần suy luận AI được chừa điểm tích hợp riêng và chưa được
 triển khai trong repository này.
 
@@ -19,8 +19,8 @@ Tài khoản demo được tạo tự động ở lần chạy đầu:
 - Email: `demo@motorcare.vn`
 - Mật khẩu: `MotorCare123!`
 
-Database được tạo tại `data/motorcare.sqlite`. Các migration nằm trong
-`ma_nguon/may_chu/co_so_du_lieu/chuyen_doi`.
+Khi chạy local, database được tạo tại `data/motorcare.sqlite`. Các migration
+nằm trong `ma_nguon/may_chu/co_so_du_lieu/chuyen_doi`.
 
 ## Lệnh chính
 
@@ -120,7 +120,14 @@ biến môi trường `DEVICE_OFFLINE_SECONDS` (mặc định 90 giây).
 ## Triển khai Vercel
 
 Repository có `index.js` ở thư mục gốc để Vercel nhận diện Express và tự tạo
-tài nguyên tĩnh trong bước build. Khi chạy trên Vercel, SQLite được đặt tại
-`/tmp/motorcare.sqlite`; dữ liệu có thể mất khi function khởi động lại nên cấu
-hình này chỉ phù hợp cho demo. Bản production cần chuyển sang cơ sở dữ liệu bền
-vững như Postgres.
+tài nguyên tĩnh trong bước build. Production dùng Turso để lưu bền vững tài
+khoản, phiên đăng nhập, motor, dữ liệu cảm biến và cảnh báo giữa các lần Vercel
+khởi động function. Cấu hình đồng thời hai biến môi trường sau trong project:
+
+```env
+TURSO_DATABASE_URL=libsql://your-database.turso.io
+TURSO_AUTH_TOKEN=your-database-token
+```
+
+Nếu không có cấu hình Turso, ứng dụng tự dùng SQLite local. Trên Vercel, chế độ
+dự phòng này dùng `/tmp/motorcare.sqlite` và chỉ phù hợp để kiểm thử tạm thời.

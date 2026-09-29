@@ -1,10 +1,10 @@
 const app = require('./ung_dung');
 const appConfig = require('./cau_hinh/ung_dung.cau_hinh');
-const { getDatabase, closeDatabase } = require('./co_so_du_lieu/ket_noi');
+const { initializeDatabase, closeDatabase } = require('./co_so_du_lieu/ket_noi');
 const { seedDatabase } = require('./co_so_du_lieu/tao_du_lieu_mau');
 
 async function startServer() {
-  getDatabase();
+  await initializeDatabase();
 
   if (appConfig.env !== 'test' && process.env.SKIP_SEED !== '1') {
     await seedDatabase();
@@ -17,8 +17,7 @@ async function startServer() {
   function shutdown(signal) {
     console.log(`\nNhận ${signal}, đang đóng server...`);
     server.close(() => {
-      closeDatabase();
-      process.exit(0);
+      closeDatabase().finally(() => process.exit(0));
     });
   }
 

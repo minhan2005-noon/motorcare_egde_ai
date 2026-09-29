@@ -5,6 +5,7 @@ const sensorRepository = require('../kho_du_lieu/cam_bien.kho_du_lieu');
 const alertRepository = require('../kho_du_lieu/canh_bao.kho_du_lieu');
 const calibrationRepository = require('../kho_du_lieu/hieu_chuan.kho_du_lieu');
 const { hashPassword } = require('../tien_ich/mat_khau');
+const { initializeDatabase, closeDatabase } = require('./ket_noi');
 
 const DEMO_EMAIL = 'demo@motorcare.vn';
 const DEMO_PASSWORD = 'MotorCare123!';
@@ -181,14 +182,16 @@ async function seedDatabase() {
 }
 
 if (require.main === module) {
-  seedDatabase()
+  initializeDatabase()
+    .then(() => seedDatabase())
     .then(() => {
       console.log(`Đã tạo dữ liệu demo: ${DEMO_EMAIL} / ${DEMO_PASSWORD}`);
     })
     .catch((error) => {
       console.error(error);
       process.exitCode = 1;
-    });
+    })
+    .finally(() => closeDatabase());
 }
 
 module.exports = {
