@@ -14,11 +14,15 @@
   "author": "3 tk gay",
   "type": "commonjs",
   "main": "ma_nguon/may_chu/may_chu.js",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "test": "NODE_ENV=test DB_PATH=:memory: node --test ma_nguon/kiem_thu/may_chu/*.kiem_thu.js",
     "start": "node ma_nguon/may_chu/may_chu.js",
     "dev": "nodemon ma_nguon/may_chu/may_chu.js",
-    "db:seed": "node ma_nguon/may_chu/co_so_du_lieu/tao_du_lieu_mau.js"
+    "db:seed": "node ma_nguon/may_chu/co_so_du_lieu/tao_du_lieu_mau.js",
+    "vercel-build": "node scripts/chuan_bi_vercel.js"
   },
   "dependencies": {
     "dotenv": "^17.4.2",

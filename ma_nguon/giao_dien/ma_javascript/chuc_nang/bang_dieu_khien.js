@@ -78,7 +78,7 @@
       return `
         <article class="card metric-card" style="--metric-color:${color};--metric-soft:${soft}">
           <span class="metric-icon" aria-hidden="true">${icon}</span>
-          <p class="metric-label">${window.MotorCareFormat.escapeHtml(item.label)}</p>
+          <p class="metric-label">${window.MotorCareFormat.escapeHtml(window.MotorCareI18n?.t(item.label) || item.label)}</p>
           <p class="metric-value">
             <strong>${window.MotorCareFormat.number(item.value)}</strong>
             <span>${window.MotorCareFormat.escapeHtml(item.unit)}</span>

@@ -17,8 +17,8 @@
         <div class="topbar-actions">
           <button class="icon-button mobile-menu" id="mobileMenuButton" type="button" aria-label="Mở menu">☰</button>
           <div class="topbar-title">
-            <h1>Tổng quan vận hành</h1>
-            <p>Dữ liệu cảm biến và cảnh báo theo ngưỡng thời gian thực</p>
+            <h1>Tổng quan hôm nay</h1>
+            <p>Theo dõi sức khỏe thiết bị và những việc cần bạn chú ý</p>
           </div>
         </div>
         <div class="topbar-actions">
@@ -33,8 +33,8 @@
         <section class="machine-ribbon" aria-labelledby="liveMotorTitle">
           <div class="machine-ribbon-copy">
             <span class="eyebrow"><span class="live-dot" aria-hidden="true"></span> Edge telemetry</span>
-            <h2 id="liveMotorTitle">Trạng thái truyền động trực tiếp</h2>
-            <p>Mô hình phản hồi theo trạng thái hiển thị và giúp nhận diện nhanh khu vực motor đang được theo dõi.</p>
+            <h2 id="liveMotorTitle">Trạng thái vận hành trực tiếp</h2>
+            <p>Quan sát nhanh motor đang được chọn và theo dõi luồng dữ liệu cảm biến theo thời gian thực.</p>
             <div class="machine-facts" aria-label="Thông tin luồng dữ liệu">
               <span><strong>4</strong> kênh cảm biến</span>
               <span><strong id="sceneRefreshRate">10s</strong> làm mới</span>
@@ -57,7 +57,7 @@
         <div class="dashboard-grid" id="dashboardGrid">
           <section class="overview-top">
             <article class="card health-card">
-              <h2>Motor Health Score</h2>
+              <h2>Sức khỏe motor</h2>
               <div class="health-gauge" id="healthGauge">
                 <strong id="healthScore">0<small>%</small></strong>
                 <span id="healthStatus">Chưa có dữ liệu</span>
@@ -71,21 +71,21 @@
             <section class="charts-row">
               <article class="card chart-card">
                 <div class="card-header">
-                  <h3>Vibration RMS (mm/s)</h3>
+                  <h3>Độ rung RMS (mm/s)</h3>
                   <span class="realtime">Real-time</span>
                 </div>
                 <canvas id="vibrationChart"></canvas>
               </article>
               <article class="card chart-card">
                 <div class="card-header">
-                  <h3>Current RMS (A)</h3>
+                  <h3>Dòng điện RMS (A)</h3>
                   <span class="realtime">Real-time</span>
                 </div>
                 <canvas id="currentChart"></canvas>
               </article>
               <article class="card chart-card">
                 <div class="card-header">
-                  <h3>Temperature (°C)</h3>
+                  <h3>Nhiệt độ (°C)</h3>
                   <span class="realtime">Real-time</span>
                 </div>
                 <canvas id="temperatureChart"></canvas>
@@ -116,14 +116,14 @@
 
           <aside class="card ai-card">
             <div class="card-header">
-              <h3>AI Diagnosis</h3>
-              <span class="status maintenance">Chờ tích hợp</span>
+              <h3>Gợi ý từ AI</h3>
+              <span class="status maintenance">Đang hoàn thiện</span>
             </div>
             <div class="ai-body">
               <div class="ai-placeholder">
                 <span class="ai-chip">AI</span>
-                <h3 id="aiMessage">Mô-đun AI chưa được tích hợp</h3>
-                <p>none AI</p>
+                <h3 id="aiMessage">Phân tích AI đang được hoàn thiện</h3>
+                <p>Dữ liệu cảm biến và cảnh báo theo ngưỡng vẫn hoạt động bình thường trong thời gian chờ tích hợp.</p>
                 <code class="endpoint" id="aiEndpoint">/api/ai/inference</code>
               </div>
             </div>

@@ -1,0 +1,13 @@
+{
+  "source_files": 18,
+  "condition_variants": 18,
+  "condition_families": 6,
+  "recording_segments": 19,
+  "input_rows": 326952,
+  "removed_corrupt_rows": 49,
+  "removed_suspect_accel_rows": 362,
+  "clean_sample_rows": 326541,
+  "ina_measurements": 33270,
+  "one_second_windows": 1666,
+  "windows_rejected": 16
+}

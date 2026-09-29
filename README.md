@@ -78,6 +78,33 @@ thật không trả mã OTP trong API.
 
 ## Phạm vi AI
 
-Dashboard hiển thị trạng thái chờ tích hợp tại `/api/ai/inference`. Nhóm AI có
-thể nối route này vào mô hình sau mà không phải thay đổi các API database,
-authentication, motor, sensor hay alert.
+Source từ bộ MotorCare trên Google Drive đã được sắp vào các khu vực sẵn có:
+
+- `ma_nguon/phan_mem_nhung`: sketch ESP32, trích xuất 15 đặc trưng và trọng số
+  mô hình MLP `15 -> 12 -> 8 -> 3`.
+- `ma_nguon/tri_tue_nhan_tao/tien_ich/bo_du_lieu.py`: làm sạch dữ liệu đo và
+  tạo các cửa sổ đặc trưng một giây.
+- `ma_nguon/tri_tue_nhan_tao/du_lieu`: mô tả dữ liệu, thứ tự đặc trưng và bản
+  tóm tắt bộ dữ liệu đã tiền xử lý.
+- `ma_nguon/minh_hoa/motorcare_v1_web_demo`: dashboard LAN độc lập nhận kết quả
+  suy luận trực tiếp từ ESP32.
+
+Để chạy pipeline tiền xử lý:
+
+```bash
+python3 -m pip install -r ma_nguon/tri_tue_nhan_tao/requirements.txt
+python3 ma_nguon/tri_tue_nhan_tao/tien_ich/bo_du_lieu.py original.zip \
+  --out ma_nguon/tri_tue_nhan_tao/du_lieu
+```
+
+Dashboard Express chính vẫn hiển thị trạng thái chờ tích hợp tại
+`/api/ai/inference`. Demo LAN là luồng độc lập, dùng cổng `5000`, và chưa thay
+thế route AI của ứng dụng Express.
+
+## Triển khai Vercel
+
+Repository có `index.js` ở thư mục gốc để Vercel nhận diện Express và tự tạo
+tài nguyên tĩnh trong bước build. Khi chạy trên Vercel, SQLite được đặt tại
+`/tmp/motorcare.sqlite`; dữ liệu có thể mất khi function khởi động lại nên cấu
+hình này chỉ phù hợp cho demo. Bản production cần chuyển sang cơ sở dữ liệu bền
+vững như Postgres.

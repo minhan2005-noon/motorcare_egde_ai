@@ -241,6 +241,18 @@
   };
 
   const vietnamese = {
+    Dashboard: 'Tổng quan',
+    Motors: 'Thiết bị',
+    Calibration: 'Hiệu chuẩn',
+    Alerts: 'Cảnh báo',
+    Dataset: 'Dữ liệu',
+    Settings: 'Cài đặt',
+    'Motor condition monitoring': 'Giám sát sức khỏe motor',
+    'AI inference chưa tích hợp. Dashboard hiện dùng dữ liệu cảm biến và ngưỡng hệ thống.': 'MotorCare vẫn đang theo dõi cảm biến và cảnh báo theo ngưỡng. Tính năng phân tích AI sẽ sớm được bổ sung.',
+    'Vibration RMS': 'Độ rung RMS',
+    'Current RMS': 'Dòng điện RMS',
+    Temperature: 'Nhiệt độ',
+    'Sound Level': 'Độ ồn',
     active: 'Đang hoạt động',
     inactive: 'Ngừng hoạt động',
     maintenance: 'Bảo trì',

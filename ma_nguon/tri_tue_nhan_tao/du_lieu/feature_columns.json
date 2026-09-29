@@ -1,0 +1,17 @@
+[
+  "ax_std_g",
+  "ay_std_g",
+  "az_std_g",
+  "dynamic_accel_rms_g",
+  "accel_norm_mean_g",
+  "accel_norm_std_g",
+  "accel_norm_p95_g",
+  "accel_step_median_g",
+  "accel_step_p95_g",
+  "v_bus_mean_v",
+  "v_bus_std_v",
+  "v_bus_min_v",
+  "current_mean_ma",
+  "current_std_ma",
+  "current_p95_ma"
+]
