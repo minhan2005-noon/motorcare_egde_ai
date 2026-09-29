@@ -11,12 +11,16 @@
   let pairingTimer;
   let pairingStartedAt = 0;
   let generatedDeviceConfig = '';
+  let lastDashboardSignature = '';
 
   function drawChart(canvas, values, labels, color, compact = false) {
     const rect = canvas.getBoundingClientRect();
     const width = Math.max(Math.floor(rect.width), compact ? 100 : 240);
     const height = Math.max(Math.floor(rect.height), compact ? 30 : 160);
-    const ratio = window.devicePixelRatio || 1;
+    // A very high device-pixel ratio makes the large live charts expensive to
+    // repaint. Two physical pixels per CSS pixel remain sharp on Retina while
+    // keeping refreshes smooth on integrated GPUs and mobile devices.
+    const ratio = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = width * ratio;
     canvas.height = height * ratio;
 
@@ -81,7 +85,7 @@
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
     ctx.shadowColor = color;
-    ctx.shadowBlur = compact ? 5 : 12;
+    ctx.shadowBlur = compact ? 3 : 7;
     ctx.stroke(trace);
     ctx.shadowBlur = 0;
 
@@ -319,6 +323,7 @@
   }
 
   async function resetDashboardAfterDeletion() {
+    lastDashboardSignature = '';
     const loading = document.getElementById('loadingLine');
     loading.hidden = false;
     try {
@@ -332,14 +337,28 @@
     }
   }
 
-  async function loadDashboard(motorId) {
+  function dashboardSignature(data) {
+    return JSON.stringify({
+      selectedMotor: data.selectedMotor?.id || null,
+      connection: data.connection,
+      health: data.health,
+      metrics: data.metrics,
+      charts: data.charts,
+      alerts: data.alerts,
+      diagnosis: data.diagnosis,
+    });
+  }
+
+  async function loadDashboard(motorId, options = {}) {
+    const background = options.background === true;
     const loading = document.getElementById('loadingLine');
-    loading.hidden = false;
+    if (!background) loading.hidden = false;
     try {
       const result = await window.MotorCareApi.get(
         `/dashboard/overview${motorId ? `?motorId=${encodeURIComponent(motorId)}` : ''}`,
       );
       const data = result.data;
+      const nextSignature = dashboardSignature(data);
       selectedMotor = data.selectedMotor
         ? {
           ...data.selectedMotor,
@@ -347,6 +366,8 @@
           lastSeenAt: data.connection.lastUpdated,
         }
         : null;
+      if (background && nextSignature === lastDashboardSignature) return;
+      lastDashboardSignature = nextSignature;
       if (!selectedMotor) {
         renderEmpty();
         return;
@@ -394,7 +415,7 @@
     } catch (error) {
       window.MotorCareToast.show(error.message, 'error');
     } finally {
-      loading.hidden = true;
+      if (!background) loading.hidden = true;
     }
   }
 
@@ -409,7 +430,7 @@
     if (sceneRate) sceneRate.textContent = `${refreshInterval}s`;
     refreshTimer = setInterval(() => {
       if (!document.hidden && document.body.dataset.page === 'dashboard' && selectedMotor) {
-        loadDashboard(selectedMotor.id);
+        loadDashboard(selectedMotor.id, { background: true });
       }
     }, refreshInterval * 1000);
 
@@ -468,7 +489,7 @@
     if (sceneRate) sceneRate.textContent = `${refreshInterval}s`;
     refreshTimer = setInterval(() => {
       if (!document.hidden && document.body.dataset.page === 'dashboard' && selectedMotor) {
-        loadDashboard(selectedMotor.id);
+        loadDashboard(selectedMotor.id, { background: true });
       }
     }, refreshInterval * 1000);
   });

@@ -63,12 +63,13 @@ body {
   top: 72px;
   border: 62px solid rgba(54, 200, 255, 0.07);
   animation: auth-ring 9s linear infinite;
+  will-change: transform;
 }
 
 .auth-visual::after {
   opacity: 0.6;
   background: linear-gradient(120deg, transparent 0 8%, #ff9f43 8% 9%, transparent 9% 24%, #36c8ff 24% 25%, transparent 25% 42%, #44efad 42% 43%, transparent 43% 100%);
-  animation: signal-scan 2.2s linear infinite;
+  transform: translateY(-8px) skewY(-8deg);
 }
 
 .auth-brand { gap: 14px; }

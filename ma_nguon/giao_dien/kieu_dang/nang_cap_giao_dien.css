@@ -141,10 +141,8 @@ body::before {
   gap: 0;
   padding: 0;
   border-color: var(--line);
-  background: color-mix(in srgb, var(--bg) 90%, transparent);
+  background: var(--bg);
   box-shadow: 14px 0 46px rgba(0, 0, 0, 0.18);
-  -webkit-backdrop-filter: blur(22px);
-  backdrop-filter: blur(22px);
 }
 
 .brand {
@@ -284,9 +282,9 @@ body::before {
   min-height: 88px;
   padding: 15px 30px;
   border-color: var(--line);
-  background: color-mix(in srgb, var(--bg) 76%, transparent);
-  -webkit-backdrop-filter: blur(22px);
-  backdrop-filter: blur(22px);
+  background: color-mix(in srgb, var(--bg) 96%, var(--surface));
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 .topbar-title::before {
@@ -583,10 +581,8 @@ body[data-page="calibration"] .split-layout {
   padding: 12px 14px;
   border: 1px solid var(--line-strong);
   border-radius: 14px;
-  background: color-mix(in srgb, var(--surface) 90%, transparent);
+  background: var(--surface);
   box-shadow: var(--shadow);
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
 }
 .settings-savebar span { color: var(--muted); font-size: 11px; }
 .settings-savebar span.unsaved { color: var(--orange); font-weight: 800; }
