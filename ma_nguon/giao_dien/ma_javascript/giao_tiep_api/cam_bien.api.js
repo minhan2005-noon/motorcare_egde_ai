@@ -10,6 +10,8 @@
       `/sensors/motors/${encodeURIComponent(motorId)}/readings`,
       payload,
     ),
-    exportUrl: (motorId) => `/api/sensors/motors/${encodeURIComponent(motorId)}/export`,
+    exportUrl: (motorId, query = '') => (
+      `/api/sensors/motors/${encodeURIComponent(motorId)}/export${query ? `?${query}` : ''}`
+    ),
   };
 }());

@@ -23,6 +23,7 @@ nằm trong `ma_nguon/may_chu/co_so_du_lieu/chuyen_doi`.
 ```bash
 npm run dev
 npm test
+npm run test:firmware
 npm run db:check
 npm run db:seed
 ```
@@ -30,6 +31,22 @@ npm run db:seed
 `db:check` chạy migration còn thiếu, ping database và đối chiếu số migration
 đã áp dụng với mã nguồn. Endpoint `/api/health/ready` cung cấp cùng trạng thái
 cho hệ thống triển khai; `/api/health` chỉ là liveness nhẹ.
+
+`npm test` chạy cả test Node.js và test pipeline AI. Cần cài dependency Python
+trước lần chạy đầu tiên:
+
+```bash
+python3 -m pip install -r ma_nguon/tri_tue_nhan_tao/requirements.txt
+```
+
+`npm run test:firmware` biên dịch sketch cho `esp32dev` bằng PlatformIO để bắt
+lỗi C++ và dependency cảm biến trước khi nạp lên bo mạch. Nếu máy chưa có
+PlatformIO, cài bằng `python3 -m pip install platformio`.
+
+Dữ liệu demo mặc định bị tắt. Chỉ bật ở máy phát triển bằng
+`SKIP_SEED=0` và một `DEMO_PASSWORD` riêng trong `.env`; production luôn bỏ qua
+seed ngay cả khi cấu hình nhầm. Đặt `PUBLIC_APP_URL` thành URL HTTPS chính thức
+để mã cấu hình ESP32 dùng đúng endpoint thay vì phụ thuộc header của request.
 
 ## API
 
@@ -106,7 +123,7 @@ python3 ma_nguon/tri_tue_nhan_tao/huan_luyen/huan_luyen_mo_hinh.py \
 python3 ma_nguon/tri_tue_nhan_tao/huan_luyen/danh_gia_mo_hinh.py \
   ma_nguon/tri_tue_nhan_tao/mo_hinh/motorcare_mlp.joblib \
   ma_nguon/tri_tue_nhan_tao/du_lieu/motorcare_features_1s.csv
-python3 ma_nguon/kiem_thu/tri_tue_nhan_tao/dac_trung.kiem_thu.py
+python3 -m unittest discover -s ma_nguon/kiem_thu/tri_tue_nhan_tao -p 'test_*.py'
 ```
 
 Pipeline chia train/test theo `session_id`, lưu model cùng metadata/metrics và
@@ -132,6 +149,9 @@ AI khi xác suất đạt từ 50%. Có thể thay đổi ngưỡng bằng biế
 Mã kết nối chỉ hiện một lần và được lưu trên server dưới dạng SHA-256. Tạo mã
 mới sẽ vô hiệu hóa mã cũ. Có thể điều chỉnh thời gian xác định mất kết nối bằng
 biến môi trường `DEVICE_OFFLINE_SECONDS` (mặc định 90 giây).
+Firmware dùng một task mạng và hàng đợi riêng nên HTTP/TLS không chặn chu kỳ lấy
+mẫu 200 Hz. HTTPS được kiểm tra bằng CA gốc trong `motorcare_tls.h`; cần cập nhật
+trust anchor nếu chuyển deployment sang nhà cung cấp chứng chỉ khác.
 
 ## Triển khai Vercel
 
@@ -143,6 +163,8 @@ khởi động function. Cấu hình đồng thời hai biến môi trường sa
 ```env
 TURSO_DATABASE_URL=libsql://your-database.turso.io
 TURSO_AUTH_TOKEN=your-database-token
+PUBLIC_APP_URL=https://your-project.vercel.app
+SKIP_SEED=1
 ```
 
 Nếu không có cấu hình Turso, ứng dụng tự dùng SQLite local. Trên Vercel, chế độ

@@ -7,25 +7,22 @@ const calibrationRepository = require('../kho_du_lieu/hieu_chuan.kho_du_lieu');
 const { hashPassword } = require('../tien_ich/mat_khau');
 const { initializeDatabase, closeDatabase } = require('./ket_noi');
 
-const DEMO_EMAIL = 'demo@motorcare.vn';
-const DEMO_PASSWORD = 'MotorCare123!';
+const DEMO_EMAIL = process.env.DEMO_EMAIL || 'demo@motorcare.vn';
+const DEMO_PASSWORD = process.env.DEMO_PASSWORD || '';
 
 function timestamp(minutesAgo) {
   return new Date(Date.now() - minutesAgo * 60 * 1000).toISOString();
 }
 
 async function seedDatabase() {
-  const existingUser = await userRepository.findByEmail(DEMO_EMAIL);
-  if (existingUser) {
-    const existingMotor = await motorRepository.findById('demo-motor-01');
-    if (existingMotor && !existingMotor.lastSeenAt) {
-      await motorRepository.update(existingMotor.id, {
-        connectionStatus: 'connected',
-        lastSeenAt: timestamp(1),
-      });
-    }
-    return;
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('Không được phép tạo dữ liệu demo trong môi trường production');
   }
+  if (!DEMO_PASSWORD) {
+    throw new Error('Cần đặt DEMO_PASSWORD trước khi tạo dữ liệu demo');
+  }
+  const existingUser = await userRepository.findByEmail(DEMO_EMAIL);
+  if (existingUser) return;
 
   const now = new Date().toISOString();
   const user = await userRepository.create({

@@ -16,6 +16,7 @@
           : JSON.stringify(options.body),
       });
     } catch (cause) {
+      if (cause?.name === 'AbortError') throw cause;
       const error = new Error('Không thể kết nối tới server');
       error.cause = cause;
       throw error;
@@ -43,7 +44,7 @@
 
   window.MotorCareApi = {
     request,
-    get: (path) => request(path),
+    get: (path, options = {}) => request(path, options),
     post: (path, body) => request(path, { method: 'POST', body }),
     patch: (path, body) => request(path, { method: 'PATCH', body }),
     delete: (path) => request(path, { method: 'DELETE' }),

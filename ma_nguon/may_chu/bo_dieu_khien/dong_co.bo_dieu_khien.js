@@ -1,4 +1,5 @@
 const os = require('os');
+const appConfig = require('../cau_hinh/ung_dung.cau_hinh');
 const motorService = require('../dich_vu/dong_co.dich_vu');
 const asyncHandler = require('../tien_ich/xu_ly_bat_dong_bo');
 const response = require('../tien_ich/phan_hoi_api');
@@ -29,10 +30,15 @@ const remove = asyncHandler(async (req, res) => {
 });
 
 const setConnection = asyncHandler(async (req, res) => {
+  if (typeof req.body?.connected !== 'boolean') {
+    const error = new Error('connected phải là kiểu boolean');
+    error.status = 400;
+    throw error;
+  }
   const motor = await motorService.setConnection(
     req.user.id,
     req.params.id,
-    Boolean(req.body?.connected),
+    req.body.connected,
   );
   return response.ok(res, { motor }, 'Cập nhật kết nối thành công');
 });
@@ -41,7 +47,9 @@ const createDeviceToken = asyncHandler(async (req, res) => {
   const setup = await motorService.createDeviceToken(req.user.id, req.params.id);
   const host = req.get('host') || '';
   const isLocalHost = /^(localhost|127\.0\.0\.1)(:\d+)?$/i.test(host);
-  let endpoint = `${req.protocol}://${host}/api/devices/readings`;
+  let endpoint = appConfig.publicAppUrl
+    ? `${appConfig.publicAppUrl}/api/devices/readings`
+    : `${req.protocol}://${host}/api/devices/readings`;
 
   if (isLocalHost && !process.env.VERCEL) {
     const localAddress = Object.values(os.networkInterfaces())

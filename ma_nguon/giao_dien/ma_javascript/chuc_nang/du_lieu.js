@@ -8,8 +8,8 @@
     const query = new URLSearchParams({ limit: '1000' });
     const from = document.getElementById('fromDate').value;
     const to = document.getElementById('toDate').value;
-    if (from) query.set('from', new Date(from).toISOString());
-    if (to) query.set('to', new Date(to).toISOString());
+    if (from) query.set('from', new Date(`${from}T00:00:00`).toISOString());
+    if (to) query.set('to', new Date(`${to}T23:59:59.999`).toISOString());
     document.getElementById('loadingLine').hidden = false;
     try {
       const result = await window.SensorApi.list(selectedMotorId, query.toString());
@@ -28,7 +28,10 @@
         `).join('')
         : '<tr><td colspan="7">Chưa có mẫu đo.</td></tr>';
       document.getElementById('datasetTotal').textContent = `${result.data.total} mẫu đo`;
-      document.getElementById('exportLink').href = window.SensorApi.exportUrl(selectedMotorId);
+      document.getElementById('exportLink').href = window.SensorApi.exportUrl(
+        selectedMotorId,
+        query.toString(),
+      );
     } catch (error) {
       window.MotorCareToast.show(error.message, 'error');
     } finally {

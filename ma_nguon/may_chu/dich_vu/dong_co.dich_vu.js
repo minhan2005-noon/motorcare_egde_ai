@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const motorRepository = require('../kho_du_lieu/dong_co.kho_du_lieu');
 const motorValidator = require('../kiem_tra/dong_co.kiem_tra');
 const httpError = require('../tien_ich/loi_http');
+const { withEffectiveConnectionStatus } = require('../tien_ich/trang_thai_thiet_bi');
 
 async function createDeviceCode() {
   for (let attempt = 0; attempt < 10; attempt += 1) {
@@ -14,7 +15,9 @@ async function createDeviceCode() {
 }
 
 async function listMotors(userId) {
-  return motorRepository.findAllByOwner(userId);
+  const motors = await motorRepository.findAllByOwner(userId);
+  const now = Date.now();
+  return motors.map((motor) => withEffectiveConnectionStatus(motor, now));
 }
 
 async function createMotor(userId, payload) {
@@ -25,7 +28,7 @@ async function createMotor(userId, payload) {
   }
 
   const now = new Date().toISOString();
-  return motorRepository.create({
+  return withEffectiveConnectionStatus(await motorRepository.create({
     id: crypto.randomUUID(),
     ownerId: userId,
     deviceCode,
@@ -41,7 +44,7 @@ async function createMotor(userId, payload) {
     notes: data.notes || '',
     createdAt: now,
     updatedAt: now,
-  });
+  }));
 }
 
 async function getMotor(userId, id) {
@@ -51,7 +54,7 @@ async function getMotor(userId, id) {
     throw httpError(404, 'Không tìm thấy motor');
   }
 
-  return motor;
+  return withEffectiveConnectionStatus(motor);
 }
 
 async function updateMotor(userId, id, payload) {
@@ -65,7 +68,7 @@ async function updateMotor(userId, id, payload) {
     }
   }
 
-  return motorRepository.update(id, patch);
+  return withEffectiveConnectionStatus(await motorRepository.update(id, patch));
 }
 
 async function deleteMotor(userId, id) {
@@ -85,10 +88,12 @@ async function deleteMotor(userId, id) {
 
 async function setConnection(userId, id, connected) {
   await getMotor(userId, id);
-  return motorRepository.update(id, {
-    connectionStatus: connected ? 'connected' : 'disconnected',
-    lastSeenAt: connected ? new Date().toISOString() : null,
-  });
+  if (connected !== false) {
+    throw httpError(400, 'Thiết bị chỉ được đánh dấu trực tuyến sau khi gửi dữ liệu hợp lệ');
+  }
+  return withEffectiveConnectionStatus(await motorRepository.update(id, {
+    connectionStatus: 'disconnected',
+  }));
 }
 
 async function createDeviceToken(userId, id) {

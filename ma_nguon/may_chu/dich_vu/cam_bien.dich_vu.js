@@ -4,6 +4,26 @@ const calibrationRepository = require('../kho_du_lieu/hieu_chuan.kho_du_lieu');
 const motorRepository = require('../kho_du_lieu/dong_co.kho_du_lieu');
 const motorService = require('./dong_co.dich_vu');
 const sensorValidator = require('../kiem_tra/cam_bien.kiem_tra');
+const httpError = require('../tien_ich/loi_http');
+
+function normalizeOptions(options = {}) {
+  const normalized = {
+    limit: options.limit,
+    offset: options.offset,
+  };
+  for (const field of ['from', 'to']) {
+    if (!options[field]) continue;
+    const date = new Date(options[field]);
+    if (Number.isNaN(date.getTime())) {
+      throw httpError(400, `Thời gian ${field} không hợp lệ`);
+    }
+    normalized[field] = date.toISOString();
+  }
+  if (normalized.from && normalized.to && normalized.from > normalized.to) {
+    throw httpError(400, 'Thời gian bắt đầu phải trước thời gian kết thúc');
+  }
+  return normalized;
+}
 
 async function createThresholdAlert(motor, type, value, threshold, unit, severity = 'high') {
   if (await alertRepository.findRecentOpen(motor.id, type)) {
@@ -78,16 +98,19 @@ async function evaluateEmbeddedAi(motor, reading) {
 
 async function persistReading(motor, payload) {
   const data = sensorValidator.reading(payload);
+  const receivedAt = new Date().toISOString();
   const reading = await sensorRepository.create({
     motorId: motor.id,
     ...data,
-    createdAt: new Date().toISOString(),
+    createdAt: receivedAt,
   });
 
-  await motorRepository.update(motor.id, {
-    connectionStatus: 'connected',
-    lastSeenAt: data.recordedAt,
-  });
+  if (data.source === 'device') {
+    await motorRepository.update(motor.id, {
+      connectionStatus: 'connected',
+      lastSeenAt: receivedAt,
+    });
+  }
   await evaluateThresholds(motor, reading);
   await evaluateEmbeddedAi(motor, reading);
 
@@ -96,7 +119,10 @@ async function persistReading(motor, payload) {
 
 async function createReading(userId, motorId, payload) {
   const motor = await motorService.getMotor(userId, motorId);
-  return persistReading(motor, payload);
+  return persistReading(motor, {
+    ...payload,
+    source: 'manual',
+  });
 }
 
 async function createDeviceReading(motor, payload) {
@@ -108,8 +134,11 @@ async function createDeviceReading(motor, payload) {
 
 async function listReadings(userId, motorId, options) {
   await motorService.getMotor(userId, motorId);
-  const readings = await sensorRepository.findByMotor(motorId, options);
-  const total = await sensorRepository.countByMotor(motorId);
+  const normalized = normalizeOptions(options);
+  const [readings, total] = await Promise.all([
+    sensorRepository.findByMotor(motorId, normalized),
+    sensorRepository.countByMotor(motorId, normalized),
+  ]);
   return { readings, total };
 }
 
@@ -120,8 +149,9 @@ async function latestReading(userId, motorId) {
 
 async function exportReadings(userId, motorId, options) {
   const motor = await motorService.getMotor(userId, motorId);
+  const normalized = normalizeOptions(options);
   const readings = await sensorRepository.findByMotor(motorId, {
-    ...options,
+    ...normalized,
     limit: 1000,
   });
   return { motor, readings };
@@ -133,4 +163,5 @@ module.exports = {
   listReadings,
   latestReading,
   exportReadings,
+  normalizeOptions,
 };

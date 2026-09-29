@@ -70,12 +70,18 @@ async function findByEmail(email) {
   return mapUser(row, { includePassword: true });
 }
 
-async function recordFailedLogin(id, attempts, lockedUntil) {
+async function recordFailedLogin(id, lockThreshold, lockedUntil) {
   await getDatabase().prepare(`
     UPDATE users
-    SET failed_login_attempts = ?, locked_until = ?, updated_at = ?
+    SET failed_login_attempts = failed_login_attempts + 1,
+        locked_until = CASE
+          WHEN failed_login_attempts + 1 >= ? THEN ?
+          ELSE locked_until
+        END,
+        updated_at = ?
     WHERE id = ?
-  `).run(attempts, lockedUntil, new Date().toISOString(), id);
+  `).run(lockThreshold, lockedUntil, new Date().toISOString(), id);
+  return findById(id);
 }
 
 async function recordSuccessfulLogin(id) {

@@ -261,8 +261,14 @@
     document.getElementById('detailConnectButton').addEventListener('click', async () => {
       if (!detailMotor) return;
       try {
-        await window.MotorApi.setConnection(detailMotor.id, detailMotor.connectionStatus !== 'connected');
-        await loadDetail();
+        if (detailMotor.connectionStatus === 'connected') {
+          await window.MotorApi.setConnection(detailMotor.id, false);
+          await loadDetail();
+        } else {
+          await window.MotorCareRouter?.navigate(
+            `/dashboard?motorId=${encodeURIComponent(detailMotor.id)}`,
+          );
+        }
       } catch (error) {
         window.MotorCareToast.show(error.message, 'error');
       }

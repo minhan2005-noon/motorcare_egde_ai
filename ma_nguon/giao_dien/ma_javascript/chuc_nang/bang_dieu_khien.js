@@ -9,9 +9,12 @@
   let selectedMotor;
   let refreshTimer;
   let pairingTimer;
+  let pairingInFlight = false;
   let pairingStartedAt = 0;
   let generatedDeviceConfig = '';
   let lastDashboardSignature = '';
+  let dashboardRequestSequence = 0;
+  let dashboardAbortController;
 
   function drawChart(canvas, values, labels, color, compact = false) {
     const rect = canvas.getBoundingClientRect();
@@ -281,9 +284,13 @@
   }
 
   async function checkDevicePairing() {
-    if (!selectedMotor || document.getElementById('deviceConnectModal').hidden) return;
+    const modal = document.getElementById('deviceConnectModal');
+    if (pairingInFlight || !selectedMotor || !modal || modal.hidden) return;
+    pairingInFlight = true;
     try {
       const result = await window.MotorApi.get(selectedMotor.id);
+      if (document.body.dataset.page !== 'dashboard'
+          || document.getElementById('deviceConnectModal')?.hidden !== false) return;
       const motor = result.data.motor;
       const lastSeenAt = motor.lastSeenAt ? new Date(motor.lastSeenAt).getTime() : 0;
       if (lastSeenAt >= pairingStartedAt - 1000) {
@@ -294,7 +301,11 @@
         await loadDashboard(motor.id);
       }
     } catch (error) {
-      setDeviceModalState(false, error.message);
+      if (document.body.dataset.page === 'dashboard') {
+        setDeviceModalState(false, error.message);
+      }
+    } finally {
+      pairingInFlight = false;
     }
   }
 
@@ -352,11 +363,17 @@
   async function loadDashboard(motorId, options = {}) {
     const background = options.background === true;
     const loading = document.getElementById('loadingLine');
-    if (!background) loading.hidden = false;
+    const requestSequence = ++dashboardRequestSequence;
+    dashboardAbortController?.abort();
+    dashboardAbortController = new AbortController();
+    if (!background && loading) loading.hidden = false;
     try {
       const result = await window.MotorCareApi.get(
         `/dashboard/overview${motorId ? `?motorId=${encodeURIComponent(motorId)}` : ''}`,
+        { signal: dashboardAbortController.signal },
       );
+      if (requestSequence !== dashboardRequestSequence
+          || document.body.dataset.page !== 'dashboard') return;
       const data = result.data;
       const nextSignature = dashboardSignature(data);
       selectedMotor = data.selectedMotor
@@ -413,18 +430,28 @@
       document.getElementById('vibrationChartTitle').textContent = data.charts.vibrationLabel || 'Độ rung RMS';
       document.getElementById('vibrationChartUnit').textContent = data.charts.vibrationUnit || 'mm/s';
     } catch (error) {
+      if (error.name === 'AbortError') return;
       window.MotorCareToast.show(error.message, 'error');
     } finally {
-      if (!background) loading.hidden = true;
+      if (!background && loading && requestSequence === dashboardRequestSequence) {
+        loading.hidden = true;
+      }
     }
   }
 
   document.addEventListener('motorcare:ready', () => {
-    if (document.body.dataset.page !== 'dashboard') return;
     clearInterval(refreshTimer);
+    if (document.body.dataset.page !== 'dashboard') {
+      clearInterval(pairingTimer);
+      pairingTimer = undefined;
+      dashboardRequestSequence += 1;
+      dashboardAbortController?.abort();
+      return;
+    }
     const resetRequested = new URLSearchParams(location.search).get('reset') === '1';
+    const requestedMotorId = new URLSearchParams(location.search).get('motorId');
     if (resetRequested) resetDashboardAfterDeletion();
-    else loadDashboard();
+    else loadDashboard(requestedMotorId);
     const refreshInterval = Number(window.MotorCareApp?.settings.refreshInterval || 10);
     const sceneRate = document.getElementById('sceneRefreshRate');
     if (sceneRate) sceneRate.textContent = `${refreshInterval}s`;
@@ -436,7 +463,7 @@
 
     document.getElementById('motorSelect').addEventListener('change', (event) => {
       if (!event.target.value) return;
-      history.replaceState({}, '', '/dashboard');
+      history.replaceState({}, '', `/dashboard?motorId=${encodeURIComponent(event.target.value)}`);
       loadDashboard(event.target.value);
     });
     document.getElementById('connectionButton').addEventListener('click', openDeviceModal);

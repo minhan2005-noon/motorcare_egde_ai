@@ -1,26 +1,34 @@
-const buckets = new Map();
+const crypto = require('crypto');
+const rateLimitRepository = require('../kho_du_lieu/gioi_han_tan_suat.kho_du_lieu');
 
 function createRateLimit({ windowMs, max, message }) {
-  return (req, res, next) => {
-    const identity = `${req.ip}:${String(req.body?.email || '').toLowerCase()}`;
-    const now = Date.now();
-    const current = buckets.get(identity);
-
-    if (!current || current.resetAt <= now) {
-      buckets.set(identity, { count: 1, resetAt: now + windowMs });
+  return async (req, res, next) => {
+    try {
+      const route = `${req.baseUrl}:${req.path}`;
+      const email = String(req.body?.email || '').trim().toLowerCase();
+      const identities = [`${route}:ip:${req.ip}`];
+      if (email) identities.push(`${route}:email:${email}`);
+      const buckets = await Promise.all(identities.map((identity) => (
+        rateLimitRepository.consume(
+          crypto.createHash('sha256').update(identity).digest('hex'),
+          windowMs,
+        )
+      )));
+      const current = buckets.reduce((mostLimited, bucket) => (
+        bucket.count > mostLimited.count ? bucket : mostLimited
+      ));
+      if (current.count > max) {
+        const retryAfter = Math.max(
+          1,
+          Math.ceil((new Date(current.resetAt).getTime() - Date.now()) / 1000),
+        );
+        res.setHeader('Retry-After', retryAfter);
+        return res.status(429).json({ success: false, message });
+      }
       return next();
+    } catch (error) {
+      return next(error);
     }
-
-    current.count += 1;
-    if (current.count > max) {
-      res.setHeader('Retry-After', Math.ceil((current.resetAt - now) / 1000));
-      return res.status(429).json({
-        success: false,
-        message,
-      });
-    }
-
-    return next();
   };
 }
 

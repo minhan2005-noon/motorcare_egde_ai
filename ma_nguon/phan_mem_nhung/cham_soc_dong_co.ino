@@ -1,12 +1,17 @@
 #include <Wire.h>
 #include <Adafruit_INA219.h>
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
 #include <HTTPClient.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/queue.h>
 #include <cmath>
 #include <cstring>
+#include <ctime>
 
 #include "motorcare_features.h"
 #include "motorcare_predict.h"
+#include "motorcare_tls.h"
 
 // ESP32 DevKit / ESP32-WROOM, same I2C connections as the MotorCare prototype.
 constexpr uint8_t MPU_ADDR = 0x68;
@@ -29,6 +34,12 @@ McAccel accel[MC_MAX_ACCEL];
 McElectrical electrical[MC_MAX_ELECTRICAL];
 int accel_count = 0, electrical_count = 0;
 uint32_t next_mpu_us, next_ina_us, window_start_us;
+
+struct WebPayload {
+  char json[520];
+};
+
+QueueHandle_t web_queue = nullptr;
 
 static bool write_mpu(uint8_t reg, uint8_t value) {
   Wire.beginTransmission(MPU_ADDR);
@@ -80,6 +91,21 @@ static const char *fault_state(const float p[3]) {
   return "normal";
 }
 
+static bool sync_tls_clock() {
+  if (!String(SERVER_URL).startsWith("https://")) return true;
+  time_t now = 0;
+  time(&now);
+  if (now >= 1700000000) return true;
+
+  configTime(0, 0, "pool.ntp.org", "time.google.com");
+  uint32_t started = millis();
+  while (now < 1700000000 && millis() - started < 10000) {
+    time(&now);
+    delay(200);
+  }
+  return now >= 1700000000;
+}
+
 static void connect_wifi() {
   WiFi.mode(WIFI_STA);
   WiFi.setAutoReconnect(true);
@@ -94,40 +120,73 @@ static void connect_wifi() {
   if (WiFi.status() == WL_CONNECTED) {
     Serial.print("Wi-Fi OK, IP ESP32: ");
     Serial.println(WiFi.localIP());
+    Serial.println(sync_tls_clock()
+      ? "Dong ho TLS san sang."
+      : "Chua dong bo duoc dong ho; HTTPS co the tam thoi that bai.");
   } else {
     Serial.println("Chua vao duoc Wi-Fi; van do va chay ML, se thu gui lai o cua so sau.");
   }
 }
 
-static void send_to_web(const float features[15], const float p[3]) {
-  if (WiFi.status() != WL_CONNECTED) {
-    Serial.println("Web: bo qua gui vi ESP32 chua co Wi-Fi.");
-    return;
-  }
-
-  char payload[520];
-  snprintf(payload, sizeof(payload),
+static void enqueue_for_web(const float features[15], const float p[3]) {
+  WebPayload payload{};
+  snprintf(payload.json, sizeof(payload.json),
     "{\"deviceCode\":\"%s\",\"state\":\"%s\",\"jam_probability\":%.6f,\"vibration_probability\":%.6f,\"sag_probability\":%.6f,\"voltage_v\":%.4f,\"current_ma\":%.3f,\"vibration_rms_g\":%.5f,\"uptime_ms\":%lu}",
     DEVICE_CODE,
     fault_state(p), p[0], p[1], p[2], features[9], features[12], features[3],
     static_cast<unsigned long>(millis()));
 
-  HTTPClient http;
-  http.setTimeout(800);
-  if (!http.begin(SERVER_URL)) {
-    Serial.println("Web: URL server khong hop le.");
-    return;
+  if (xQueueSend(web_queue, &payload, 0) == pdTRUE) return;
+
+  WebPayload discarded{};
+  xQueueReceive(web_queue, &discarded, 0);
+  xQueueSend(web_queue, &payload, 0);
+  Serial.println("Web: hang doi day, da bo goi cu nhat.");
+}
+
+static void web_task(void *) {
+  WebPayload payload{};
+  for (;;) {
+    if (xQueueReceive(web_queue, &payload, portMAX_DELAY) != pdTRUE) continue;
+    if (WiFi.status() != WL_CONNECTED) {
+      WiFi.reconnect();
+      Serial.println("Web: chua co Wi-Fi, bo qua goi hien tai.");
+      continue;
+    }
+    if (!sync_tls_clock()) {
+      Serial.println("Web: chua co thoi gian chinh xac de xac minh TLS.");
+      continue;
+    }
+
+    HTTPClient http;
+    WiFiClientSecure secure_client;
+    http.setConnectTimeout(3000);
+    http.setTimeout(5000);
+    bool started = false;
+    if (String(SERVER_URL).startsWith("https://")) {
+      secure_client.setCACert(MOTORCARE_ROOT_CA);
+      started = http.begin(secure_client, SERVER_URL);
+    } else {
+      started = http.begin(SERVER_URL);
+    }
+    if (!started) {
+      Serial.println("Web: URL server khong hop le.");
+      continue;
+    }
+    http.addHeader("Content-Type", "application/json");
+    http.addHeader("X-Device-Code", DEVICE_CODE);
+    http.addHeader("X-Device-Token", DEVICE_TOKEN);
+    int response = http.POST(
+      reinterpret_cast<uint8_t *>(payload.json),
+      strlen(payload.json)
+    );
+    if (response > 0) {
+      Serial.printf("Web: HTTP %d\n", response);
+    } else {
+      Serial.printf("Web: gui that bai (%s)\n", http.errorToString(response).c_str());
+    }
+    http.end();
   }
-  http.addHeader("Content-Type", "application/json");
-  http.addHeader("X-Device-Code", DEVICE_CODE);
-  http.addHeader("X-Device-Token", DEVICE_TOKEN);
-  int response = http.POST(reinterpret_cast<uint8_t *>(payload), strlen(payload));
-  if (response > 0) {
-    Serial.printf("Web: HTTP %d\n", response);
-  } else {
-    Serial.printf("Web: gui that bai (%s)\n", http.errorToString(response).c_str());
-  }
-  http.end();
 }
 
 static void finish_window() {
@@ -141,7 +200,7 @@ static void finish_window() {
     Serial.printf("Do duoc: V=%.3f, I=%.1f mA, dao_dong=%.3f g\n",
                   features[9], features[12], features[3]);
     show_result(probability);
-    send_to_web(features, probability);
+    enqueue_for_web(features, probability);
   }
   accel_count = 0;
   electrical_count = 0;
@@ -169,6 +228,12 @@ void setup() {
   Serial.printf("Mong doi tu Python: %.6f, %.6f, %.6f\n",
                 MC_TEST_Y[0], MC_TEST_Y[1], MC_TEST_Y[2]);
   connect_wifi();
+  web_queue = xQueueCreate(8, sizeof(WebPayload));
+  if (!web_queue) {
+    Serial.println("Khong tao duoc hang doi gui web.");
+    while (true) delay(1000);
+  }
+  xTaskCreatePinnedToCore(web_task, "motorcare_web", 8192, nullptr, 1, nullptr, 0);
   Serial.println("Bat dau MotorCare V1: 1 du doan moi giay");
 
   uint32_t start = micros();

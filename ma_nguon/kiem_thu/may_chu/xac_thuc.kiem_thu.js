@@ -1,6 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const authService = require('../../may_chu/dich_vu/xac_thuc.dich_vu');
+const userRepository = require('../../may_chu/kho_du_lieu/nguoi_dung.kho_du_lieu');
 
 test('register creates a user and returns a token', async () => {
   const result = await authService.register({
@@ -28,6 +29,25 @@ test('login rejects invalid credentials', async () => {
   await assert.rejects(
     () => authService.login({ email, password: 'wrong-password' }),
     /Email hoặc mật khẩu không đúng/,
+  );
+});
+
+test('concurrent failed logins increment atomically and lock the account', async () => {
+  const email = `locked-login-${Date.now()}@example.com`;
+  const registration = await authService.register({
+    email,
+    name: 'Locked Login Test',
+    password: 'Secret123!',
+  });
+  await Promise.allSettled(Array.from({ length: 5 }, () => (
+    authService.login({ email, password: 'wrong-password' })
+  )));
+  const user = await userRepository.findById(registration.user.id);
+  assert.equal(user.failedLoginAttempts, 5);
+  assert.ok(new Date(user.lockedUntil).getTime() > Date.now());
+  await assert.rejects(
+    () => authService.login({ email, password: 'Secret123!' }),
+    /Tài khoản tạm khóa/,
   );
 });
 

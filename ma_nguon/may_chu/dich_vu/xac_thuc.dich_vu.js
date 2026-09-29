@@ -76,11 +76,8 @@ async function login(payload, context = {}) {
 
   const passwordMatches = await verifyPassword(data.password, user.passwordHash);
   if (!passwordMatches) {
-    const attempts = (user.failedLoginAttempts || 0) + 1;
-    const lockedUntil = attempts >= 5
-      ? new Date(Date.now() + 15 * 60 * 1000).toISOString()
-      : null;
-    await userRepository.recordFailedLogin(user.id, attempts, lockedUntil);
+    const lockedUntil = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+    await userRepository.recordFailedLogin(user.id, 5, lockedUntil);
     throw httpError(401, 'Email hoặc mật khẩu không đúng');
   }
 

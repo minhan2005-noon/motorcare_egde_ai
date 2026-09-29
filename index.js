@@ -6,6 +6,7 @@ if (process.env.VERCEL && !process.env.DB_PATH) {
 }
 
 const motorCareApp = require('./ma_nguon/may_chu/ung_dung');
+const appConfig = require('./ma_nguon/may_chu/cau_hinh/ung_dung.cau_hinh');
 const { initializeDatabase } = require('./ma_nguon/may_chu/co_so_du_lieu/ket_noi');
 const { seedDatabase } = require('./ma_nguon/may_chu/co_so_du_lieu/tao_du_lieu_mau');
 
@@ -16,7 +17,13 @@ function initialize() {
   if (!initialization) {
     initialization = Promise.resolve()
       .then(() => initializeDatabase())
-      .then(() => (process.env.SKIP_SEED === '1' ? undefined : seedDatabase()));
+      .then(() => (
+        appConfig.env === 'development'
+          && process.env.SKIP_SEED !== '1'
+          && process.env.DEMO_PASSWORD
+          ? seedDatabase()
+          : undefined
+      ));
   }
   return initialization;
 }

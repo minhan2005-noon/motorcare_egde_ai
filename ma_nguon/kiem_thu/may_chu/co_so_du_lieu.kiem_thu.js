@@ -11,7 +11,7 @@ test('database migrations create the complete runtime schema', async () => {
   const status = await getDatabaseStatus();
   assert.equal(status.ready, true);
   assert.equal(status.appliedMigrations, status.expectedMigrations);
-  assert.equal(status.latestMigration, '012_dat_giao_dien_toi_mac_dinh.sql');
+  assert.equal(status.latestMigration, '013_tao_gioi_han_tan_suat.sql');
 
   const tables = await getDatabase().prepare(`
     SELECT name FROM sqlite_master
@@ -22,7 +22,7 @@ test('database migrations create the complete runtime schema', async () => {
   for (const table of [
     'users', 'sessions', 'password_reset_tokens', 'motors',
     'sensor_readings', 'alerts', 'calibrations', 'user_settings',
-    'audit_logs', 'schema_migrations',
+    'audit_logs', 'rate_limit_buckets', 'schema_migrations',
   ]) {
     assert.ok(names.includes(table), `missing table ${table}`);
   }

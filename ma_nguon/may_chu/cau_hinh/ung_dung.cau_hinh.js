@@ -13,6 +13,7 @@ module.exports = {
   sessionCookieName: 'motorcare_session',
   sessionDays: Number(process.env.SESSION_DAYS) || 7,
   resetTokenMinutes: Number(process.env.RESET_TOKEN_MINUTES) || 15,
+  publicAppUrl: (process.env.PUBLIC_APP_URL || '').replace(/\/$/, ''),
   email: {
     service: process.env.SMTP_SERVICE || '',
     host: process.env.SMTP_HOST || '',

@@ -4,7 +4,6 @@ const path = require('path');
 const routes = require('./tuyen/chi_muc.tuyen');
 const notFound = require('./trung_gian/khong_tim_thay.trung_gian');
 const errorMiddleware = require('./trung_gian/loi.trung_gian');
-const timeoutMiddleware = require('./trung_gian/het_thoi_gian.trung_gian');
 const securityMiddleware = require('./trung_gian/bao_mat.trung_gian');
 const auditMiddleware = require('./trung_gian/nhat_ky.trung_gian');
 const corsMiddleware = require('./cau_hinh/cors.cau_hinh');
@@ -29,7 +28,6 @@ app.use((req, res, next) => {
 
 app.use(securityMiddleware);
 app.use(corsMiddleware);
-app.use(timeoutMiddleware());
 app.use(express.json({ limit: '256kb' }));
 app.use(express.urlencoded({ extended: false, limit: '64kb' }));
 app.use('/css', express.static(path.join(webRoot, 'kieu_dang'), { index: false }));

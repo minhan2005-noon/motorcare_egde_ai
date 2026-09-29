@@ -94,6 +94,16 @@ async function countOpenByOwner(ownerId) {
   `).get(ownerId)).count;
 }
 
+async function countActiveBySeverityForMotor(motorId) {
+  const rows = await getDatabase().prepare(`
+    SELECT severity, COUNT(*) AS count
+    FROM alerts
+    WHERE motor_id = ? AND status != 'resolved'
+    GROUP BY severity
+  `).all(motorId);
+  return Object.fromEntries(rows.map((row) => [row.severity, Number(row.count)]));
+}
+
 async function findRecentOpen(motorId, type, minutes = 15) {
   const cutoff = new Date(Date.now() - minutes * 60 * 1000).toISOString();
   const row = await getDatabase().prepare(`
@@ -140,6 +150,7 @@ module.exports = {
   findById,
   findByOwner,
   countOpenByOwner,
+  countActiveBySeverityForMotor,
   findRecentOpen,
   updateStatus,
 };

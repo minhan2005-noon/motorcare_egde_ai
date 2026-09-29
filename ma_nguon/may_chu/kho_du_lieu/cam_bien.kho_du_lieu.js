@@ -95,10 +95,21 @@ async function findByMotor(motorId, options = {}) {
   return rows.map(mapReading);
 }
 
-async function countByMotor(motorId) {
-  return (await getDatabase().prepare(
-    'SELECT COUNT(*) AS count FROM sensor_readings WHERE motor_id = ?',
-  ).get(motorId)).count;
+async function countByMotor(motorId, options = {}) {
+  const clauses = ['motor_id = ?'];
+  const values = [motorId];
+  if (options.from) {
+    clauses.push('recorded_at >= ?');
+    values.push(options.from);
+  }
+  if (options.to) {
+    clauses.push('recorded_at <= ?');
+    values.push(options.to);
+  }
+  return (await getDatabase().prepare(`
+    SELECT COUNT(*) AS count FROM sensor_readings
+    WHERE ${clauses.join(' AND ')}
+  `).get(...values)).count;
 }
 
 async function findSeries(motorId, limit = 30) {

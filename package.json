@@ -17,7 +17,10 @@
     "node": ">=22"
   },
   "scripts": {
-    "test": "NODE_ENV=test DB_PATH=:memory: node --test ma_nguon/kiem_thu/may_chu/*.kiem_thu.js",
+    "test": "npm run test:server && npm run test:ai",
+    "test:server": "NODE_ENV=test DB_PATH=:memory: node --test ma_nguon/kiem_thu/may_chu/*.kiem_thu.js",
+    "test:ai": "python3 -m unittest discover -s ma_nguon/kiem_thu/tri_tue_nhan_tao -p 'test_*.py'",
+    "test:firmware": "platformio run",
     "start": "node ma_nguon/may_chu/may_chu.js",
     "dev": "nodemon ma_nguon/may_chu/may_chu.js",
     "db:check": "node scripts/kiem_tra_co_so_du_lieu.js",

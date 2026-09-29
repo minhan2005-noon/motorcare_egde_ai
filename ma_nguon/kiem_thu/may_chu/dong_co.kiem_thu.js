@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const authService = require('../../may_chu/dich_vu/xac_thuc.dich_vu');
 const motorService = require('../../may_chu/dich_vu/dong_co.dich_vu');
 const dashboardService = require('../../may_chu/dich_vu/bang_dieu_khien.dich_vu');
+const alertRepository = require('../../may_chu/kho_du_lieu/canh_bao.kho_du_lieu');
 
 async function createUser() {
   const result = await authService.register({
@@ -50,6 +51,26 @@ test('motor service updates status and enforces ownership', async () => {
     () => motorService.getMotor(otherUser.id, motor.id),
     /Không tìm thấy motor/,
   );
+  await assert.rejects(
+    () => motorService.setConnection(owner.id, motor.id, true),
+    /chỉ được đánh dấu trực tuyến/,
+  );
+});
+
+test('dashboard health includes every active alert, not only the five displayed', async () => {
+  const owner = await createUser();
+  const motor = await motorService.createMotor(owner.id, { name: 'Health Motor' });
+  for (let index = 0; index < 6; index += 1) {
+    await alertRepository.create({
+      motorId: motor.id,
+      type: `Cảnh báo ${index}`,
+      message: 'Kiểm thử điểm sức khỏe',
+      severity: 'medium',
+    });
+  }
+  const overview = await dashboardService.getOverview(owner.id, motor.id);
+  assert.equal(overview.alerts.length, 5);
+  assert.equal(overview.health.score, 52);
 });
 
 test('deleting the selected motor returns a replacement and dashboard falls back', async () => {

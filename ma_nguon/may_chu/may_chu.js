@@ -6,7 +6,9 @@ const { seedDatabase } = require('./co_so_du_lieu/tao_du_lieu_mau');
 async function startServer() {
   await initializeDatabase();
 
-  if (appConfig.env !== 'test' && process.env.SKIP_SEED !== '1') {
+  if (appConfig.env === 'development'
+      && process.env.SKIP_SEED !== '1'
+      && process.env.DEMO_PASSWORD) {
     await seedDatabase();
   }
 

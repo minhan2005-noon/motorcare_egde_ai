@@ -1,6 +1,11 @@
 const motorRepository = require('../kho_du_lieu/dong_co.kho_du_lieu');
 const sensorRepository = require('../kho_du_lieu/cam_bien.kho_du_lieu');
 const alertRepository = require('../kho_du_lieu/canh_bao.kho_du_lieu');
+const calibrationRepository = require('../kho_du_lieu/hieu_chuan.kho_du_lieu');
+const {
+  isDeviceOnline,
+  withEffectiveConnectionStatus,
+} = require('../tien_ich/trang_thai_thiet_bi');
 
 function round(value, digits = 2) {
   return value === null || value === undefined ? null : Number(value.toFixed(digits));
@@ -21,20 +26,14 @@ function metric(id, label, unit, color, values, key) {
   };
 }
 
-function isDeviceOnline(motor) {
-  if (motor.connectionStatus !== 'connected' || !motor.lastSeenAt) return false;
-  const offlineAfterMs = Math.max(Number(process.env.DEVICE_OFFLINE_SECONDS) || 90, 10) * 1000;
-  return Date.now() - new Date(motor.lastSeenAt).getTime() <= offlineAfterMs;
-}
-
-function healthFrom(alerts, latest) {
+function healthFrom(activeAlertCounts, latest, thresholds = {}) {
   const penalties = { low: 3, medium: 8, high: 16, critical: 28 };
   let score = 100;
-  alerts.filter((alert) => alert.status !== 'resolved').forEach((alert) => {
-    score -= penalties[alert.severity] || 0;
+  Object.entries(activeAlertCounts).forEach(([severity, count]) => {
+    score -= (penalties[severity] || 0) * Number(count || 0);
   });
-  if (latest?.temperature > 80) score -= 12;
-  if (latest?.vibrationRms > 7.1) score -= 12;
+  if (latest?.temperature > (thresholds.temperatureWarning || 80)) score -= 12;
+  if (latest?.vibrationRms > (thresholds.vibrationWarning || 7.1)) score -= 12;
   score = Math.max(0, Math.min(100, score));
 
   let status = 'Tốt';
@@ -92,7 +91,9 @@ function aiDiagnosis(latest) {
 }
 
 async function getOverview(userId, requestedMotorId) {
-  const motors = await motorRepository.findAllByOwner(userId);
+  const storedMotors = await motorRepository.findAllByOwner(userId);
+  const now = Date.now();
+  const motors = storedMotors.map((motor) => withEffectiveConnectionStatus(motor, now));
   const selectedMotor = requestedMotorId
     ? motors.find((motor) => motor.id === requestedMotorId) || motors[0] || null
     : motors[0] || null;
@@ -111,10 +112,12 @@ async function getOverview(userId, requestedMotorId) {
     };
   }
 
-  const [series, alerts, openAlertCount] = await Promise.all([
+  const [series, alerts, openAlertCount, activeAlertCounts, calibration] = await Promise.all([
     sensorRepository.findSeries(selectedMotor.id, 30),
     alertRepository.findByOwner(userId, { motorId: selectedMotor.id, limit: 5 }),
     alertRepository.countOpenByOwner(userId),
+    alertRepository.countActiveBySeverityForMotor(selectedMotor.id),
+    calibrationRepository.findLatest(selectedMotor.id),
   ]);
   const latest = series.at(-1) || null;
   const usesEmbeddedReadings = latest?.accelerationRmsG !== null
@@ -133,7 +136,7 @@ async function getOverview(userId, requestedMotorId) {
       deviceId: selectedMotor.deviceCode,
       lastUpdated: selectedMotor.lastSeenAt,
     },
-    health: healthFrom(alerts, latest),
+    health: healthFrom(activeAlertCounts, latest, calibration?.thresholds),
     metrics: [
       metric(
         'vibration',
