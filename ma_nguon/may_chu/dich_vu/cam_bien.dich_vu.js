@@ -42,22 +42,33 @@ async function evaluateThresholds(motor, reading) {
   }
 }
 
-async function createReading(userId, motorId, payload) {
-  const motor = await motorService.getMotor(userId, motorId);
+async function persistReading(motor, payload) {
   const data = sensorValidator.reading(payload);
   const reading = await sensorRepository.create({
-    motorId,
+    motorId: motor.id,
     ...data,
     createdAt: new Date().toISOString(),
   });
 
-  await motorRepository.update(motorId, {
+  await motorRepository.update(motor.id, {
     connectionStatus: 'connected',
     lastSeenAt: data.recordedAt,
   });
   await evaluateThresholds(motor, reading);
 
   return reading;
+}
+
+async function createReading(userId, motorId, payload) {
+  const motor = await motorService.getMotor(userId, motorId);
+  return persistReading(motor, payload);
+}
+
+async function createDeviceReading(motor, payload) {
+  return persistReading(motor, {
+    ...payload,
+    source: 'device',
+  });
 }
 
 async function listReadings(userId, motorId, options) {
@@ -83,6 +94,7 @@ async function exportReadings(userId, motorId, options) {
 
 module.exports = {
   createReading,
+  createDeviceReading,
   listReadings,
   latestReading,
   exportReadings,

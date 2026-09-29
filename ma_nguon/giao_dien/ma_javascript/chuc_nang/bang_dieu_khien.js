@@ -4,9 +4,13 @@
     current: ['#0b9f62', '#e8f7f0', '↯'],
     temperature: ['#e86f20', '#fff0e6', '°'],
     sound: ['#7357d9', '#f0ebff', '≋'],
+    voltage: ['#7357d9', '#f0ebff', 'V'],
   };
   let selectedMotor;
   let refreshTimer;
+  let pairingTimer;
+  let pairingStartedAt = 0;
+  let generatedDeviceConfig = '';
 
   function drawChart(canvas, values, labels, color, compact = false) {
     const rect = canvas.getBoundingClientRect();
@@ -178,6 +182,63 @@
     grid.querySelector('.dashboard-empty')?.remove();
   }
 
+  function closeDeviceModal() {
+    document.getElementById('deviceConnectModal').hidden = true;
+    clearInterval(pairingTimer);
+    pairingTimer = undefined;
+  }
+
+  function setDeviceModalState(connected, message) {
+    const state = document.getElementById('deviceLiveState');
+    state.classList.toggle('connected', connected);
+    document.getElementById('deviceLiveTitle').textContent = connected
+      ? 'Đã nhận dữ liệu từ cảm biến'
+      : 'Đang chờ cảm biến gửi dữ liệu';
+    document.getElementById('deviceLiveMessage').textContent = message;
+  }
+
+  async function checkDevicePairing() {
+    if (!selectedMotor || document.getElementById('deviceConnectModal').hidden) return;
+    try {
+      const result = await window.MotorApi.get(selectedMotor.id);
+      const motor = result.data.motor;
+      const lastSeenAt = motor.lastSeenAt ? new Date(motor.lastSeenAt).getTime() : 0;
+      if (lastSeenAt >= pairingStartedAt - 1000) {
+        setDeviceModalState(true, `Gói dữ liệu mới nhất: ${window.MotorCareFormat.dateTime(motor.lastSeenAt)}`);
+        clearInterval(pairingTimer);
+        pairingTimer = undefined;
+        window.MotorCareToast.show('Cảm biến thật đã kết nối thành công');
+        await loadDashboard(motor.id);
+      }
+    } catch (error) {
+      setDeviceModalState(false, error.message);
+    }
+  }
+
+  function openDeviceModal() {
+    if (!selectedMotor) return;
+    pairingStartedAt = Date.now();
+    generatedDeviceConfig = '';
+    document.getElementById('deviceEndpoint').value = `${location.origin}/api/devices/readings`;
+    document.getElementById('pairingDeviceCode').value = selectedMotor.deviceCode;
+    document.getElementById('deviceToken').value = '';
+    document.getElementById('deviceTokenField').hidden = true;
+    document.getElementById('copyDeviceConfig').disabled = true;
+    document.getElementById('firmwareConfig').textContent = 'Nhấn “Tạo mã kết nối” để nhận cấu hình firmware.';
+    document.getElementById('deviceConnectModal').hidden = false;
+
+    const connected = selectedMotor.connectionStatus === 'connected';
+    setDeviceModalState(
+      connected,
+      connected
+        ? `Lần nhận gần nhất: ${window.MotorCareFormat.dateTime(selectedMotor.lastSeenAt)}`
+        : 'Tạo mã kết nối, nạp cấu hình vào ESP32 và bật thiết bị.',
+    );
+
+    clearInterval(pairingTimer);
+    pairingTimer = setInterval(checkDevicePairing, 2000);
+  }
+
   async function resetDashboardAfterDeletion() {
     const loading = document.getElementById('loadingLine');
     loading.hidden = false;
@@ -200,7 +261,13 @@
         `/dashboard/overview${motorId ? `?motorId=${encodeURIComponent(motorId)}` : ''}`,
       );
       const data = result.data;
-      selectedMotor = data.selectedMotor;
+      selectedMotor = data.selectedMotor
+        ? {
+          ...data.selectedMotor,
+          connectionStatus: data.connection.status,
+          lastSeenAt: data.connection.lastUpdated,
+        }
+        : null;
       if (!selectedMotor) {
         renderEmpty();
         return;
@@ -228,7 +295,7 @@
       document.getElementById('selectedDeviceCode').textContent = data.connection.deviceId || '—';
       const button = document.getElementById('connectionButton');
       button.disabled = false;
-      button.textContent = connected ? 'Ngắt kết nối' : 'Kết nối';
+      button.textContent = connected ? 'Thiết lập' : 'Kết nối cảm biến';
       button.className = `button ${connected ? 'secondary' : 'primary'} small`;
 
       document.getElementById('healthScore').innerHTML = `${data.health.score}<small>%</small>`;
@@ -246,6 +313,8 @@
       drawChart(document.getElementById('temperatureChart'), data.charts.temperature, data.charts.labels, colors.temperature[0]);
       document.getElementById('aiMessage').textContent = data.diagnosis.message;
       document.getElementById('aiEndpoint').textContent = data.diagnosis.integrationEndpoint;
+      document.getElementById('vibrationChartTitle').textContent = data.charts.vibrationLabel || 'Độ rung RMS';
+      document.getElementById('vibrationChartUnit').textContent = data.charts.vibrationUnit || 'mm/s';
     } catch (error) {
       window.MotorCareToast.show(error.message, 'error');
     } finally {
@@ -274,15 +343,44 @@
       history.replaceState({}, '', '/dashboard');
       loadDashboard(event.target.value);
     });
-    document.getElementById('connectionButton').addEventListener('click', async () => {
+    document.getElementById('connectionButton').addEventListener('click', openDeviceModal);
+    document.getElementById('closeDeviceModal').addEventListener('click', closeDeviceModal);
+    document.getElementById('deviceConnectModal').addEventListener('click', (event) => {
+      if (event.target.id === 'deviceConnectModal') closeDeviceModal();
+    });
+    document.getElementById('generateDeviceToken').addEventListener('click', async () => {
       if (!selectedMotor) return;
-      const nextConnected = selectedMotor.connectionStatus !== 'connected';
+      const button = document.getElementById('generateDeviceToken');
+      button.disabled = true;
+      button.textContent = 'Đang tạo...';
       try {
-        await window.MotorApi.setConnection(selectedMotor.id, nextConnected);
-        window.MotorCareToast.show(nextConnected ? 'Đã kết nối thiết bị' : 'Đã ngắt kết nối');
-        await loadDashboard(selectedMotor.id);
+        const result = await window.MotorApi.createDeviceToken(selectedMotor.id);
+        const { deviceCode, token, endpoint } = result.data.setup;
+        document.getElementById('deviceEndpoint').value = endpoint;
+        generatedDeviceConfig = [
+          `const char *SERVER_URL = "${endpoint}";`,
+          `const char *DEVICE_CODE = "${deviceCode}";`,
+          `const char *DEVICE_TOKEN = "${token}";`,
+        ].join('\n');
+        document.getElementById('deviceToken').value = token;
+        document.getElementById('deviceTokenField').hidden = false;
+        document.getElementById('firmwareConfig').textContent = generatedDeviceConfig;
+        document.getElementById('copyDeviceConfig').disabled = false;
+        setDeviceModalState(false, 'Mã đã sẵn sàng. Nạp cấu hình vào ESP32 và bật thiết bị.');
       } catch (error) {
         window.MotorCareToast.show(error.message, 'error');
+      } finally {
+        button.disabled = false;
+        button.textContent = 'Tạo mã mới';
+      }
+    });
+    document.getElementById('copyDeviceConfig').addEventListener('click', async () => {
+      if (!generatedDeviceConfig) return;
+      try {
+        await navigator.clipboard.writeText(generatedDeviceConfig);
+        window.MotorCareToast.show('Đã sao chép cấu hình ESP32');
+      } catch {
+        window.MotorCareToast.show('Không thể sao chép tự động', 'error');
       }
     });
   });

@@ -6,6 +6,12 @@ const ranges = {
   temperature: [-50, 250],
   soundLevel: [0, 180],
   rpm: [0, 100000],
+  accelerationRmsG: [0, 100],
+  voltageV: [0, 1000],
+  jamProbability: [0, 1],
+  vibrationProbability: [0, 1],
+  sagProbability: [0, 1],
+  uptimeMs: [0, Number.MAX_SAFE_INTEGER],
 };
 
 function numberOrNull(value, field) {
@@ -40,12 +46,29 @@ function reading(payload) {
     temperature: numberOrNull(payload.temperature, 'temperature'),
     soundLevel: numberOrNull(payload.soundLevel, 'soundLevel'),
     rpm: numberOrNull(payload.rpm, 'rpm'),
+    accelerationRmsG: numberOrNull(payload.accelerationRmsG, 'accelerationRmsG'),
+    voltageV: numberOrNull(payload.voltageV, 'voltageV'),
+    faultState: payload.faultState === undefined || payload.faultState === null
+      ? null
+      : String(payload.faultState).trim().slice(0, 80),
+    jamProbability: numberOrNull(payload.jamProbability, 'jamProbability'),
+    vibrationProbability: numberOrNull(payload.vibrationProbability, 'vibrationProbability'),
+    sagProbability: numberOrNull(payload.sagProbability, 'sagProbability'),
+    uptimeMs: numberOrNull(payload.uptimeMs, 'uptimeMs'),
     source: ['device', 'manual', 'import'].includes(payload.source)
       ? payload.source
       : 'device',
   };
 
-  if (Object.values(result).slice(1, 6).every((value) => value === null)) {
+  if ([
+    result.vibrationRms,
+    result.currentRms,
+    result.temperature,
+    result.soundLevel,
+    result.rpm,
+    result.accelerationRmsG,
+    result.voltageV,
+  ].every((value) => value === null)) {
     throw httpError(400, 'Cần ít nhất một giá trị cảm biến');
   }
 

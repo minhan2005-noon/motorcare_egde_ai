@@ -11,5 +11,9 @@
       `/motors/${encodeURIComponent(id)}/connection`,
       { connected },
     ),
+    createDeviceToken: (id) => api.post(
+      `/motors/${encodeURIComponent(id)}/device-token`,
+      {},
+    ),
   };
 }());

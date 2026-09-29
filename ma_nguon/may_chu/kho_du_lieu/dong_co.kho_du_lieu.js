@@ -69,6 +69,30 @@ async function findByDeviceCode(deviceCode) {
   ).get(deviceCode));
 }
 
+async function findDeviceCredentials(deviceCode) {
+  const row = getDatabase().prepare(
+    'SELECT * FROM motors WHERE device_code = ? COLLATE NOCASE',
+  ).get(deviceCode);
+
+  if (!row) {
+    return null;
+  }
+
+  return {
+    motor: mapMotor(row),
+    deviceTokenHash: row.device_token_hash,
+  };
+}
+
+async function updateDeviceTokenHash(id, deviceTokenHash) {
+  getDatabase().prepare(`
+    UPDATE motors
+    SET device_token_hash = ?, updated_at = ?
+    WHERE id = ?
+  `).run(deviceTokenHash, new Date().toISOString(), id);
+  return findById(id);
+}
+
 async function update(id, patch) {
   const current = await findById(id);
   if (!current) {
@@ -116,6 +140,8 @@ module.exports = {
   findAllByOwner,
   findById,
   findByDeviceCode,
+  findDeviceCredentials,
+  updateDeviceTokenHash,
   update,
   remove,
 };

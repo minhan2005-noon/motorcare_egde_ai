@@ -91,6 +91,18 @@ async function setConnection(userId, id, connected) {
   });
 }
 
+async function createDeviceToken(userId, id) {
+  const motor = await getMotor(userId, id);
+  const token = crypto.randomBytes(24).toString('hex');
+  const deviceTokenHash = crypto.createHash('sha256').update(token).digest('hex');
+  await motorRepository.updateDeviceTokenHash(id, deviceTokenHash);
+
+  return {
+    deviceCode: motor.deviceCode,
+    token,
+  };
+}
+
 module.exports = {
   listMotors,
   createMotor,
@@ -98,4 +110,5 @@ module.exports = {
   updateMotor,
   deleteMotor,
   setConnection,
+  createDeviceToken,
 };

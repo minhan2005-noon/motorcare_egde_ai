@@ -21,6 +21,12 @@ function metric(id, label, unit, color, values, key) {
   };
 }
 
+function isDeviceOnline(motor) {
+  if (motor.connectionStatus !== 'connected' || !motor.lastSeenAt) return false;
+  const offlineAfterMs = Math.max(Number(process.env.DEVICE_OFFLINE_SECONDS) || 90, 10) * 1000;
+  return Date.now() - new Date(motor.lastSeenAt).getTime() <= offlineAfterMs;
+}
+
 function healthFrom(alerts, latest) {
   const penalties = { low: 3, medium: 8, high: 16, critical: 28 };
   let score = 100;
@@ -65,6 +71,9 @@ async function getOverview(userId, requestedMotorId) {
     alertRepository.countOpenByOwner(userId),
   ]);
   const latest = series.at(-1) || null;
+  const usesEmbeddedReadings = latest?.accelerationRmsG !== null
+    && latest?.accelerationRmsG !== undefined;
+  const online = isDeviceOnline(selectedMotor);
   const labels = series.map((row) => new Date(row.recordedAt).toLocaleTimeString('vi-VN', {
     hour: '2-digit',
     minute: '2-digit',
@@ -74,22 +83,35 @@ async function getOverview(userId, requestedMotorId) {
     motors,
     selectedMotor,
     connection: {
-      status: selectedMotor.connectionStatus,
+      status: online ? 'connected' : 'disconnected',
       deviceId: selectedMotor.deviceCode,
       lastUpdated: selectedMotor.lastSeenAt,
     },
     health: healthFrom(alerts, latest),
     metrics: [
-      metric('vibration', 'Vibration RMS', 'mm/s', '#1d6ef2', series, 'vibrationRms'),
+      metric(
+        'vibration',
+        usesEmbeddedReadings ? 'Gia tốc rung RMS' : 'Vibration RMS',
+        usesEmbeddedReadings ? 'g' : 'mm/s',
+        '#1d6ef2',
+        series,
+        usesEmbeddedReadings ? 'accelerationRmsG' : 'vibrationRms',
+      ),
       metric('current', 'Current RMS', 'A', '#12a764', series, 'currentRms'),
       metric('temperature', 'Temperature', '°C', '#f47a24', series, 'temperature'),
-      metric('sound', 'Sound Level', 'dB', '#7c5ce7', series, 'soundLevel'),
+      usesEmbeddedReadings
+        ? metric('voltage', 'Điện áp', 'V', '#7c5ce7', series, 'voltageV')
+        : metric('sound', 'Sound Level', 'dB', '#7c5ce7', series, 'soundLevel'),
     ],
     charts: {
       labels,
-      vibration: series.map((row) => row.vibrationRms),
+      vibration: series.map((row) => (
+        usesEmbeddedReadings ? row.accelerationRmsG : row.vibrationRms
+      )),
       current: series.map((row) => row.currentRms),
       temperature: series.map((row) => row.temperature),
+      vibrationLabel: usesEmbeddedReadings ? 'Gia tốc rung RMS' : 'Độ rung RMS',
+      vibrationUnit: usesEmbeddedReadings ? 'g' : 'mm/s',
     },
     diagnosis: {
       available: false,

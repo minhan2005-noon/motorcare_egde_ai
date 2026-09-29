@@ -6,6 +6,7 @@ const sensorRoutes = require('./cam_bien.tuyen');
 const alertRoutes = require('./canh_bao.tuyen');
 const calibrationRoutes = require('./hieu_chuan.tuyen');
 const userRoutes = require('./nguoi_dung.tuyen');
+const deviceRoutes = require('./thiet_bi.tuyen');
 
 const router = express.Router();
 
@@ -21,6 +22,7 @@ router.get('/health', (req, res) => {
 });
 
 router.use('/auth', authRoutes);
+router.use('/devices', deviceRoutes);
 router.use('/motors', motorRoutes);
 router.use('/dashboard', dashboardRoutes);
 router.use('/sensors', sensorRoutes);

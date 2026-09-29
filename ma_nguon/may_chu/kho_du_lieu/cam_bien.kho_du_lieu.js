@@ -14,6 +14,13 @@ function mapReading(row) {
     temperature: row.temperature,
     soundLevel: row.sound_level,
     rpm: row.rpm,
+    accelerationRmsG: row.acceleration_rms_g,
+    voltageV: row.voltage_v,
+    faultState: row.fault_state,
+    jamProbability: row.jam_probability,
+    vibrationProbability: row.vibration_probability,
+    sagProbability: row.sag_probability,
+    uptimeMs: row.uptime_ms,
     source: row.source,
     createdAt: row.created_at,
   };
@@ -23,8 +30,10 @@ async function create(reading) {
   const result = getDatabase().prepare(`
     INSERT INTO sensor_readings (
       motor_id, recorded_at, vibration_rms, current_rms,
-      temperature, sound_level, rpm, source, created_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      temperature, sound_level, rpm, acceleration_rms_g, voltage_v,
+      fault_state, jam_probability, vibration_probability, sag_probability,
+      uptime_ms, source, created_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     reading.motorId,
     reading.recordedAt,
@@ -33,6 +42,13 @@ async function create(reading) {
     reading.temperature,
     reading.soundLevel,
     reading.rpm,
+    reading.accelerationRmsG ?? null,
+    reading.voltageV ?? null,
+    reading.faultState ?? null,
+    reading.jamProbability ?? null,
+    reading.vibrationProbability ?? null,
+    reading.sagProbability ?? null,
+    reading.uptimeMs ?? null,
     reading.source,
     reading.createdAt,
   );

@@ -47,6 +47,8 @@ Tất cả API nghiệp vụ, trừ đăng ký/đăng nhập/quên mật khẩu,
 - `GET|POST /api/motors`
 - `GET|PATCH|DELETE /api/motors/:id`
 - `PATCH /api/motors/:id/connection`
+- `POST /api/motors/:id/device-token`
+- `POST /api/devices/readings` (xác thực bằng `X-Device-Code` và `X-Device-Token`)
 - `GET|POST /api/sensors/motors/:motorId/readings`
 - `GET /api/sensors/motors/:motorId/latest`
 - `GET /api/sensors/motors/:motorId/export`
@@ -98,8 +100,22 @@ python3 ma_nguon/tri_tue_nhan_tao/tien_ich/bo_du_lieu.py original.zip \
 ```
 
 Dashboard Express chính vẫn hiển thị trạng thái chờ tích hợp tại
-`/api/ai/inference`. Demo LAN là luồng độc lập, dùng cổng `5000`, và chưa thay
-thế route AI của ứng dụng Express.
+`/api/ai/inference`. Tuy nhiên, luồng dữ liệu thật từ ESP32 đã được nối trực
+tiếp vào dashboard Node.js qua `POST /api/devices/readings`.
+
+## Kết nối ESP32 và cảm biến thật
+
+1. Chạy MotorCare trên máy tính cùng mạng Wi-Fi với ESP32.
+2. Mở Dashboard, chọn motor và nhấn **Kết nối cảm biến** hoặc **Thiết lập**.
+3. Nhấn **Tạo mã kết nối**. Giao diện tự ưu tiên địa chỉ IPv4 LAN của máy chủ.
+4. Sao chép ba dòng `SERVER_URL`, `DEVICE_CODE`, `DEVICE_TOKEN` vào
+   `ma_nguon/phan_mem_nhung/cham_soc_dong_co.ino`, đồng thời điền Wi-Fi.
+5. Nạp firmware và bật ESP32. Dashboard tự chuyển sang trạng thái trực tuyến
+   khi nhận gói dữ liệu đầu tiên; không cần đổi trạng thái bằng tay.
+
+Mã kết nối chỉ hiện một lần và được lưu trên server dưới dạng SHA-256. Tạo mã
+mới sẽ vô hiệu hóa mã cũ. Có thể điều chỉnh thời gian xác định mất kết nối bằng
+biến môi trường `DEVICE_OFFLINE_SECONDS` (mặc định 90 giây).
 
 ## Triển khai Vercel
 

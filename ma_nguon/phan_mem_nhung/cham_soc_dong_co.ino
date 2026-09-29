@@ -17,10 +17,12 @@ constexpr uint32_t INA_INTERVAL_US = 50000;  // About 20 Hz
 constexpr uint32_t WINDOW_US = 1000000;      // One second
 constexpr float ACCEL_LSB_PER_G = 8192.0f;   // MPU6050 +/-4 g (register 0x1C=0x08)
 
-// Điền tên/mật khẩu Wi-Fi và IPv4 của máy tính đang chạy app.py.
+// Điền Wi-Fi, địa chỉ MotorCare Node.js và mã do giao diện "Kết nối cảm biến" tạo.
 const char *WIFI_SSID = "TEN_WIFI_CUA_BAN";
 const char *WIFI_PASSWORD = "MAT_KHAU_WIFI";
-const char *SERVER_URL = "http://192.168.1.10:5000/api/prediction";
+const char *SERVER_URL = "http://192.168.1.10:3000/api/devices/readings";
+const char *DEVICE_CODE = "MC-EDGE-XXXX";
+const char *DEVICE_TOKEN = "DAN_MA_KET_NOI_TU_DASHBOARD";
 
 Adafruit_INA219 ina219(0x40);
 McAccel accel[MC_MAX_ACCEL];
@@ -103,9 +105,10 @@ static void send_to_web(const float features[15], const float p[3]) {
     return;
   }
 
-  char payload[360];
+  char payload[520];
   snprintf(payload, sizeof(payload),
-    "{\"state\":\"%s\",\"jam_probability\":%.6f,\"vibration_probability\":%.6f,\"sag_probability\":%.6f,\"voltage_v\":%.4f,\"current_ma\":%.3f,\"vibration_rms_g\":%.5f,\"uptime_ms\":%lu}",
+    "{\"deviceCode\":\"%s\",\"state\":\"%s\",\"jam_probability\":%.6f,\"vibration_probability\":%.6f,\"sag_probability\":%.6f,\"voltage_v\":%.4f,\"current_ma\":%.3f,\"vibration_rms_g\":%.5f,\"uptime_ms\":%lu}",
+    DEVICE_CODE,
     fault_state(p), p[0], p[1], p[2], features[9], features[12], features[3],
     static_cast<unsigned long>(millis()));
 
@@ -116,6 +119,8 @@ static void send_to_web(const float features[15], const float p[3]) {
     return;
   }
   http.addHeader("Content-Type", "application/json");
+  http.addHeader("X-Device-Code", DEVICE_CODE);
+  http.addHeader("X-Device-Token", DEVICE_TOKEN);
   int response = http.POST(reinterpret_cast<uint8_t *>(payload), strlen(payload));
   if (response > 0) {
     Serial.printf("Web: HTTP %d\n", response);

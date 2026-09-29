@@ -15,7 +15,10 @@ function corsMiddleware(req, res, next) {
     res.setHeader('Access-Control-Allow-Credentials', 'true');
   }
 
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Auth-Transport');
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'Content-Type, Authorization, X-Auth-Transport, X-Device-Code, X-Device-Token',
+  );
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PATCH,DELETE,OPTIONS');
 
   if (req.method === 'OPTIONS') {

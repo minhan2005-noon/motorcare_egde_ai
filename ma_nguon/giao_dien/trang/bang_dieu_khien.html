@@ -103,7 +103,7 @@
             <section class="charts-row">
               <article class="card chart-card">
                 <div class="card-header">
-                  <div><span class="chart-kicker">Cảm biến 01</span><h3>Độ rung RMS <small>mm/s</small></h3></div>
+                  <div><span class="chart-kicker">Cảm biến 01</span><h3><span id="vibrationChartTitle">Độ rung RMS</span> <small id="vibrationChartUnit">mm/s</small></h3></div>
                   <span class="realtime">Trực tiếp</span>
                 </div>
                 <canvas id="vibrationChart"></canvas>
@@ -169,6 +169,55 @@
         </div>
       </section>
     </main>
+  </div>
+
+  <div class="modal device-modal" id="deviceConnectModal" hidden>
+    <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="deviceConnectTitle">
+      <div class="card-header">
+        <div>
+          <span class="chart-kicker">ESP32 · MPU6050 · INA219</span>
+          <h2 id="deviceConnectTitle">Kết nối cảm biến thật</h2>
+        </div>
+        <button class="icon-button" id="closeDeviceModal" type="button" aria-label="Đóng">×</button>
+      </div>
+      <div class="modal-body device-connect-body">
+        <div class="device-live-state" id="deviceLiveState">
+          <span class="connection-pulse" aria-hidden="true"></span>
+          <div>
+            <strong id="deviceLiveTitle">Sẵn sàng ghép nối</strong>
+            <p id="deviceLiveMessage">Tạo mã kết nối, nạp cấu hình vào ESP32 và bật thiết bị.</p>
+          </div>
+        </div>
+
+        <ol class="device-steps">
+          <li><span>1</span><div><strong>Tạo mã kết nối</strong><p>Mỗi motor dùng một mã riêng để gửi dữ liệu an toàn.</p></div></li>
+          <li><span>2</span><div><strong>Dán cấu hình vào ESP32</strong><p>Cập nhật Wi-Fi cùng ba dòng cấu hình bên dưới rồi nạp lại firmware.</p></div></li>
+          <li><span>3</span><div><strong>Bật cảm biến</strong><p>Dashboard tự chuyển sang “Đã kết nối” ngay khi nhận gói dữ liệu đầu tiên.</p></div></li>
+        </ol>
+
+        <div class="device-config-grid">
+          <label class="field">
+            <span>API nhận dữ liệu</span>
+            <input class="input code-input" id="deviceEndpoint" readonly>
+          </label>
+          <label class="field">
+            <span>Mã thiết bị</span>
+            <input class="input code-input" id="pairingDeviceCode" readonly>
+          </label>
+          <label class="field full" id="deviceTokenField" hidden>
+            <span>Mã kết nối — chỉ hiển thị trong lần này</span>
+            <input class="input code-input" id="deviceToken" readonly>
+          </label>
+        </div>
+
+        <pre class="firmware-config" id="firmwareConfig">Nhấn “Tạo mã kết nối” để nhận cấu hình firmware.</pre>
+        <p class="device-security-note">Không chia sẻ mã kết nối. Tạo mã mới sẽ vô hiệu hóa mã cũ của motor này.</p>
+      </div>
+      <div class="modal-footer device-modal-footer">
+        <button class="button secondary" id="copyDeviceConfig" type="button" disabled>Sao chép cấu hình</button>
+        <button class="button primary" id="generateDeviceToken" type="button">Tạo mã kết nối</button>
+      </div>
+    </section>
   </div>
 
   <script defer src="/js/giao_tiep_api/http.js"></script>
