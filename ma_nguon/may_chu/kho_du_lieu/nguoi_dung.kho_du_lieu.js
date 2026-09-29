@@ -47,7 +47,7 @@ async function create(user) {
     INSERT INTO user_settings (
       user_id, language, theme, email_notifications,
       browser_notifications, created_at, updated_at
-    ) VALUES (?, 'vi', 'light', 1, 1, ?, ?)
+    ) VALUES (?, 'vi', 'dark', 1, 1, ?, ?)
   `).run(user.id, user.createdAt, user.updatedAt);
 
   return findPublicById(user.id);

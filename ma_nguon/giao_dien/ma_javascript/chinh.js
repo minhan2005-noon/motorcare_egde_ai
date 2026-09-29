@@ -4,7 +4,7 @@
     user: null,
     settings: {
       language: 'vi',
-      theme: 'system',
+      theme: 'dark',
       fontScale: 'normal',
       density: 'comfortable',
       highContrast: false,

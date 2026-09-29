@@ -11,7 +11,7 @@ test('database migrations create the complete runtime schema', async () => {
   const status = await getDatabaseStatus();
   assert.equal(status.ready, true);
   assert.equal(status.appliedMigrations, status.expectedMigrations);
-  assert.equal(status.latestMigration, '011_loai_bo_cau_hinh_3d.sql');
+  assert.equal(status.latestMigration, '012_dat_giao_dien_toi_mac_dinh.sql');
 
   const tables = await getDatabase().prepare(`
     SELECT name FROM sqlite_master
