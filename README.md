@@ -1,8 +1,8 @@
 # MotorCare Edge AI
 
 Ứng dụng Express + SQLite/Turso để quản lý motor, dữ liệu cảm biến, cảnh báo và
-dashboard vận hành. Phần suy luận AI được chừa điểm tích hợp riêng và chưa được
-triển khai trong repository này.
+dashboard vận hành. Mô hình Edge AI chạy trực tiếp trên ESP32 và gửi kết quả
+chẩn đoán lên Dashboard theo thời gian thực.
 
 ## Chạy dự án
 
@@ -99,9 +99,11 @@ python3 ma_nguon/tri_tue_nhan_tao/tien_ich/bo_du_lieu.py original.zip \
   --out ma_nguon/tri_tue_nhan_tao/du_lieu
 ```
 
-Dashboard Express chính vẫn hiển thị trạng thái chờ tích hợp tại
-`/api/ai/inference`. Tuy nhiên, luồng dữ liệu thật từ ESP32 đã được nối trực
-tiếp vào dashboard Node.js qua `POST /api/devices/readings`.
+Dashboard Express nhận trực tiếp trạng thái AI và xác suất kẹt tải, rung bất
+thường, sụt áp từ ESP32 qua `POST /api/devices/readings`. Kết quả được lưu cùng
+dữ liệu cảm biến, hiển thị trong thẻ **Chẩn đoán trực tiếp** và tự tạo cảnh báo
+AI khi xác suất đạt từ 50%. Có thể thay đổi ngưỡng bằng biến môi trường
+`AI_ALERT_THRESHOLD`.
 
 ## Kết nối ESP32 và cảm biến thật
 

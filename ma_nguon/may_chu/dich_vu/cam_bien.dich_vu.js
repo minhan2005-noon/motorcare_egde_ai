@@ -42,6 +42,40 @@ async function evaluateThresholds(motor, reading) {
   }
 }
 
+const aiFaults = [
+  { key: 'jamProbability', type: 'AI · Kẹt tải', label: 'kẹt tải' },
+  { key: 'vibrationProbability', type: 'AI · Rung bất thường', label: 'rung bất thường' },
+  { key: 'sagProbability', type: 'AI · Sụt áp', label: 'sụt áp' },
+];
+
+function aiSeverity(probability) {
+  if (probability >= 0.85) return 'critical';
+  if (probability >= 0.7) return 'high';
+  return 'medium';
+}
+
+async function evaluateEmbeddedAi(motor, reading) {
+  const configuredThreshold = Number(process.env.AI_ALERT_THRESHOLD);
+  const threshold = Number.isFinite(configuredThreshold)
+    ? Math.min(Math.max(configuredThreshold, 0.5), 0.95)
+    : 0.5;
+
+  for (const fault of aiFaults) {
+    const probability = reading[fault.key];
+    if (!Number.isFinite(probability) || probability < threshold) continue;
+    if (await alertRepository.findRecentOpen(motor.id, fault.type)) continue;
+
+    await alertRepository.create({
+      motorId: motor.id,
+      type: fault.type,
+      message: `Edge AI phát hiện nguy cơ ${fault.label} với độ tin cậy ${(probability * 100).toFixed(1)}%`,
+      severity: aiSeverity(probability),
+      confidence: probability,
+      source: 'ai',
+    });
+  }
+}
+
 async function persistReading(motor, payload) {
   const data = sensorValidator.reading(payload);
   const reading = await sensorRepository.create({
@@ -55,6 +89,7 @@ async function persistReading(motor, payload) {
     lastSeenAt: data.recordedAt,
   });
   await evaluateThresholds(motor, reading);
+  await evaluateEmbeddedAi(motor, reading);
 
   return reading;
 }

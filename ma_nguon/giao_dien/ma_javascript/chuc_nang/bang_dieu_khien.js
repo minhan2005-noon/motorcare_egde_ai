@@ -123,6 +123,49 @@
     `).join('');
   }
 
+  function renderDiagnosis(diagnosis = {}) {
+    const card = document.querySelector('.ai-card');
+    const status = document.getElementById('aiStatus');
+    const level = diagnosis.available ? diagnosis.level : 'waiting';
+    card.classList.remove('ai-normal', 'ai-warning', 'ai-danger', 'ai-waiting');
+    card.classList.add(`ai-${level}`);
+    status.className = `status ${level === 'normal' ? 'connected' : level === 'danger' ? 'disconnected' : 'maintenance'}`;
+    status.textContent = level === 'normal'
+      ? 'Bình thường'
+      : level === 'warning'
+        ? 'Cần kiểm tra'
+        : level === 'danger'
+          ? 'Nguy hiểm'
+          : 'Chờ dữ liệu';
+
+    document.getElementById('aiMessage').textContent = diagnosis.message || 'Đang chờ kết quả Edge AI';
+    document.getElementById('aiDescription').textContent = diagnosis.description
+      || 'Bật ESP32 đã ghép nối để gửi kết quả suy luận lên Dashboard.';
+
+    const elementIds = {
+      jam: ['aiJamValue', 'aiJamBar'],
+      vibration: ['aiVibrationValue', 'aiVibrationBar'],
+      sag: ['aiSagValue', 'aiSagBar'],
+    };
+    (diagnosis.outcomes || []).forEach((outcome) => {
+      const ids = elementIds[outcome.id];
+      if (!ids) return;
+      const available = Number.isFinite(outcome.probability);
+      const percent = available ? Math.round(Math.min(Math.max(outcome.probability, 0), 1) * 100) : 0;
+      document.getElementById(ids[0]).textContent = available ? `${percent}%` : '—';
+      document.getElementById(ids[1]).style.width = `${percent}%`;
+      const row = document.querySelector(`[data-ai-outcome="${outcome.id}"]`);
+      row.classList.toggle('is-alert', percent >= 50);
+    });
+
+    document.getElementById('aiConfidence').textContent = Number.isFinite(diagnosis.confidence)
+      ? `Độ tin cậy cao nhất ${Math.round(diagnosis.confidence * 100)}%`
+      : 'Độ tin cậy —';
+    document.getElementById('aiUpdatedAt').textContent = diagnosis.updatedAt
+      ? `Cập nhật ${window.MotorCareFormat.dateTime(diagnosis.updatedAt)}`
+      : 'Chưa có dữ liệu AI';
+  }
+
   function renderEmpty(motors = [], resetAfterDeletion = false) {
     selectedMotor = null;
     document.body.classList.toggle('dashboard-reset-mode', resetAfterDeletion);
@@ -173,6 +216,7 @@
     connectionButton.disabled = true;
     connectionButton.textContent = 'Kết nối';
     connectionButton.className = 'button primary small';
+    renderDiagnosis();
   }
 
   function clearEmpty() {
@@ -311,8 +355,7 @@
       drawChart(document.getElementById('vibrationChart'), data.charts.vibration, data.charts.labels, colors.vibration[0]);
       drawChart(document.getElementById('currentChart'), data.charts.current, data.charts.labels, colors.current[0]);
       drawChart(document.getElementById('temperatureChart'), data.charts.temperature, data.charts.labels, colors.temperature[0]);
-      document.getElementById('aiMessage').textContent = data.diagnosis.message;
-      document.getElementById('aiEndpoint').textContent = data.diagnosis.integrationEndpoint;
+      renderDiagnosis(data.diagnosis);
       document.getElementById('vibrationChartTitle').textContent = data.charts.vibrationLabel || 'Độ rung RMS';
       document.getElementById('vibrationChartUnit').textContent = data.charts.vibrationUnit || 'mm/s';
     } catch (error) {

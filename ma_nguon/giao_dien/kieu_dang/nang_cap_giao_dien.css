@@ -1594,6 +1594,123 @@ body::before {
   box-shadow: 0 12px 28px rgba(114, 87, 168, 0.22);
 }
 
+.ai-card.ai-normal {
+  border-top-color: var(--green);
+}
+
+.ai-card.ai-warning {
+  border-top-color: var(--yellow);
+}
+
+.ai-card.ai-danger {
+  border-top-color: var(--red);
+}
+
+.ai-body {
+  align-content: start;
+  gap: 22px;
+  text-align: left;
+}
+
+.ai-summary {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 60px minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+}
+
+.ai-summary .ai-chip {
+  margin: 0;
+}
+
+.ai-summary-label {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.ai-summary h3 {
+  margin: 0;
+  color: var(--ink-strong);
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+.ai-summary p {
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.ai-probabilities {
+  width: 100%;
+  display: grid;
+  gap: 15px;
+}
+
+.ai-probability > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 7px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.ai-probability strong {
+  color: var(--ink-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+.ai-probability-track {
+  height: 8px;
+  display: block;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--surface-strong);
+}
+
+.ai-probability-track i {
+  width: 0;
+  height: 100%;
+  display: block;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--green), #34c585);
+  transition: width 240ms ease;
+}
+
+.ai-probability.is-alert .ai-probability-track i {
+  background: linear-gradient(90deg, var(--orange), var(--red));
+}
+
+.ai-probability.is-alert strong {
+  color: var(--red);
+}
+
+.ai-meta {
+  width: 100%;
+  display: grid;
+  gap: 4px;
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.ai-meta span {
+  color: var(--ink);
+  font-weight: 800;
+}
+
 .alerts-card {
   border-top: 4px solid var(--orange);
 }

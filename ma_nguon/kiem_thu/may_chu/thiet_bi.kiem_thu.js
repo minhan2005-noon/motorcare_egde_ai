@@ -4,6 +4,8 @@ const authService = require('../../may_chu/dich_vu/xac_thuc.dich_vu');
 const motorService = require('../../may_chu/dich_vu/dong_co.dich_vu');
 const deviceService = require('../../may_chu/dich_vu/thiet_bi.dich_vu');
 const sensorService = require('../../may_chu/dich_vu/cam_bien.dich_vu');
+const alertService = require('../../may_chu/dich_vu/canh_bao.dich_vu');
+const dashboardService = require('../../may_chu/dich_vu/bang_dieu_khien.dich_vu');
 
 test('real device token authenticates and persists an embedded sensor reading', async () => {
   const registration = await authService.register({
@@ -49,5 +51,31 @@ test('real device token authenticates and persists an embedded sensor reading', 
   assert.equal(latest.faultState, 'normal');
   assert.equal(connectedMotor.connectionStatus, 'connected');
   assert.ok(connectedMotor.lastSeenAt);
-});
 
+  await deviceService.ingestReading({
+    'x-device-code': setup.deviceCode,
+    'x-device-token': setup.token,
+  }, {
+    state: 'jam',
+    voltage_v: 12.05,
+    current_ma: 860,
+    vibration_rms_g: 0.11,
+    jam_probability: 0.91,
+    vibration_probability: 0.18,
+    sag_probability: 0.06,
+    uptime_ms: 6000,
+  });
+
+  const alerts = await alertService.listAlerts(registration.user.id, { motorId: motor.id });
+  const overview = await dashboardService.getOverview(registration.user.id, motor.id);
+
+  assert.equal(alerts.alerts.length, 1);
+  assert.equal(alerts.alerts[0].type, 'AI · Kẹt tải');
+  assert.equal(alerts.alerts[0].source, 'ai');
+  assert.equal(alerts.alerts[0].severity, 'critical');
+  assert.equal(alerts.alerts[0].confidence, 0.91);
+  assert.equal(overview.diagnosis.available, true);
+  assert.equal(overview.diagnosis.level, 'danger');
+  assert.equal(overview.diagnosis.state, 'jam');
+  assert.equal(overview.diagnosis.outcomes[0].probability, 0.91);
+});

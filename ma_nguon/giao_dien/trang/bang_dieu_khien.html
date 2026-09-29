@@ -152,17 +152,37 @@
           <aside class="card ai-card">
             <div class="card-header">
               <div>
-                <span class="chart-kicker">Hỗ trợ vận hành</span>
-                <h3>Gợi ý từ AI</h3>
+                <span class="chart-kicker">ESP32 Edge AI</span>
+                <h3>Chẩn đoán trực tiếp</h3>
               </div>
-              <span class="status maintenance">Đang hoàn thiện</span>
+              <span class="status maintenance" id="aiStatus">Chờ dữ liệu</span>
             </div>
             <div class="ai-body">
-              <div class="ai-placeholder">
+              <div class="ai-summary">
                 <span class="ai-chip">AI</span>
-                <h3 id="aiMessage">Phân tích AI đang được hoàn thiện</h3>
-                <p>Dữ liệu cảm biến và cảnh báo theo ngưỡng vẫn hoạt động bình thường trong thời gian chờ tích hợp.</p>
-                <code class="endpoint" id="aiEndpoint">/api/ai/inference</code>
+                <div>
+                  <span class="ai-summary-label">Kết quả mới nhất</span>
+                  <h3 id="aiMessage">Đang chờ kết quả Edge AI</h3>
+                  <p id="aiDescription">Bật ESP32 đã ghép nối để gửi kết quả suy luận lên Dashboard.</p>
+                </div>
+              </div>
+              <div class="ai-probabilities" aria-label="Xác suất sự cố do Edge AI dự đoán">
+                <div class="ai-probability" data-ai-outcome="jam">
+                  <div><span>Kẹt tải</span><strong id="aiJamValue">—</strong></div>
+                  <span class="ai-probability-track"><i id="aiJamBar"></i></span>
+                </div>
+                <div class="ai-probability" data-ai-outcome="vibration">
+                  <div><span>Rung bất thường</span><strong id="aiVibrationValue">—</strong></div>
+                  <span class="ai-probability-track"><i id="aiVibrationBar"></i></span>
+                </div>
+                <div class="ai-probability" data-ai-outcome="sag">
+                  <div><span>Sụt áp</span><strong id="aiSagValue">—</strong></div>
+                  <span class="ai-probability-track"><i id="aiSagBar"></i></span>
+                </div>
+              </div>
+              <div class="ai-meta">
+                <span id="aiConfidence">Độ tin cậy —</span>
+                <time id="aiUpdatedAt">Chưa có dữ liệu AI</time>
               </div>
             </div>
           </aside>

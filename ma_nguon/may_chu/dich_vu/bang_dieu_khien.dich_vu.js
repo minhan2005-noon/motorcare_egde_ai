@@ -45,6 +45,52 @@ function healthFrom(alerts, latest) {
   return { score, status };
 }
 
+function aiDiagnosis(latest) {
+  const outcomes = [
+    { id: 'jam', label: 'Kẹt tải', probability: latest?.jamProbability },
+    { id: 'vibration', label: 'Rung bất thường', probability: latest?.vibrationProbability },
+    { id: 'sag', label: 'Sụt áp', probability: latest?.sagProbability },
+  ].map((outcome) => ({
+    ...outcome,
+    probability: Number.isFinite(outcome.probability) ? outcome.probability : null,
+  }));
+  const available = outcomes.some((outcome) => outcome.probability !== null);
+
+  if (!available) {
+    return {
+      available: false,
+      level: 'waiting',
+      state: 'waiting',
+      message: 'Đang chờ kết quả Edge AI',
+      description: 'Bật ESP32 đã ghép nối để gửi kết quả suy luận lên Dashboard.',
+      confidence: null,
+      outcomes,
+      updatedAt: latest?.recordedAt || null,
+    };
+  }
+
+  const active = outcomes.filter((outcome) => (
+    outcome.probability !== null && outcome.probability >= 0.5
+  ));
+  const confidence = Math.max(...outcomes.map((outcome) => outcome.probability ?? 0));
+  const level = confidence >= 0.85 ? 'danger' : active.length ? 'warning' : 'normal';
+
+  return {
+    available: true,
+    level,
+    state: active.length ? active.map((outcome) => outcome.id).join('+') : 'normal',
+    message: active.length
+      ? `Phát hiện ${active.map((outcome) => outcome.label.toLowerCase()).join(' + ')}`
+      : 'Motor đang vận hành bình thường',
+    description: active.length
+      ? 'Kiểm tra thiết bị và đối chiếu dữ liệu cảm biến trước khi tiếp tục vận hành.'
+      : 'Edge AI chưa phát hiện dấu hiệu kẹt tải, rung bất thường hoặc sụt áp.',
+    confidence,
+    outcomes,
+    updatedAt: latest.recordedAt,
+  };
+}
+
 async function getOverview(userId, requestedMotorId) {
   const motors = await motorRepository.findAllByOwner(userId);
   const selectedMotor = requestedMotorId
@@ -59,7 +105,7 @@ async function getOverview(userId, requestedMotorId) {
       health: { score: 0, status: 'Chưa có dữ liệu' },
       metrics: [],
       charts: { labels: [], vibration: [], current: [], temperature: [] },
-      diagnosis: { available: false, message: 'Mô-đun AI chưa được tích hợp' },
+      diagnosis: aiDiagnosis(null),
       alerts: [],
       openAlertCount: 0,
     };
@@ -113,11 +159,7 @@ async function getOverview(userId, requestedMotorId) {
       vibrationLabel: usesEmbeddedReadings ? 'Gia tốc rung RMS' : 'Độ rung RMS',
       vibrationUnit: usesEmbeddedReadings ? 'g' : 'mm/s',
     },
-    diagnosis: {
-      available: false,
-      message: 'Mô-đun AI đang chờ nhóm phụ trách tích hợp',
-      integrationEndpoint: '/api/ai/inference',
-    },
+    diagnosis: aiDiagnosis(latest),
     alerts,
     openAlertCount,
   };

@@ -52,7 +52,7 @@
         </button>
       </div>
       <div class="sidebar-note">
-        ${t('AI inference chưa tích hợp. Dashboard hiện dùng dữ liệu cảm biến và ngưỡng hệ thống.')}
+        ${t('Edge AI đang phân tích trực tiếp trên ESP32 và gửi cảnh báo lên Dashboard.')}
       </div>
       <div class="user-panel">
         <span class="avatar" id="userAvatar"></span>
