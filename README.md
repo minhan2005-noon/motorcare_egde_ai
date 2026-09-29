@@ -14,10 +14,6 @@ npm start
 
 Mở `http://localhost:3000`.
 
-Tài khoản demo được tạo tự động ở lần chạy đầu:
-
-- Email: `demo@motorcare.vn`
-- Mật khẩu: `MotorCare123!`
 
 Khi chạy local, database được tạo tại `data/motorcare.sqlite`. Các migration
 nằm trong `ma_nguon/may_chu/co_so_du_lieu/chuyen_doi`.
