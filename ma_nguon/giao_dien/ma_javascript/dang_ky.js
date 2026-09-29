@@ -55,7 +55,8 @@ registerForm.addEventListener('submit', async (event) => {
   window.AuthUi.setLoading(registerButton, true, 'Đang tạo tài khoản...');
   try {
     await window.AuthApi.register({ fullName, email, password });
-    location.assign('/dashboard');
+    sessionStorage.removeItem('motorcare:signed-out');
+    location.replace('/dashboard');
   } catch (error) {
     window.AuthUi.setAlert(registerAlert, error.message);
   } finally {

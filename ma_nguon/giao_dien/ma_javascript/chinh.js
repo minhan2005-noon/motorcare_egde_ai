@@ -1,5 +1,18 @@
 (function initializeApplication() {
   const storageKey = 'motorcare:appearance';
+  const signedOutKey = 'motorcare:signed-out';
+
+  function redirectSignedOutHistory() {
+    if (sessionStorage.getItem(signedOutKey) === '1') {
+      location.replace('/login');
+      return true;
+    }
+    return false;
+  }
+
+  window.addEventListener('pageshow', redirectSignedOutHistory);
+  if (redirectSignedOutHistory()) return;
+
   const state = {
     user: null,
     settings: {
@@ -68,7 +81,7 @@
       try {
         await window.AuthApi.logout();
       } finally {
-        location.assign('/login');
+        finishLogout();
       }
     });
 
@@ -89,6 +102,14 @@
         state.settings.reducedMotion ? 'Đã bật chuyển động' : 'Đã giảm chuyển động',
       );
     });
+  }
+
+  function finishLogout() {
+    state.user = null;
+    window.motorcareUser = null;
+    window.MotorCareRouter?.clearCache();
+    sessionStorage.setItem(signedOutKey, '1');
+    location.replace('/login');
   }
 
   async function saveQuickSettings(patch, message) {
@@ -184,6 +205,7 @@
       state.user = user;
       window.motorcareUser = user;
     },
+    finishLogout,
   };
 
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {

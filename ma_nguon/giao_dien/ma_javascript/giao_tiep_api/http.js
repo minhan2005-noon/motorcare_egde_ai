@@ -34,7 +34,9 @@
 
       const isAuthPage = ['/login', '/register', '/forgot-password'].includes(location.pathname);
       if (response.status === 401 && !isAuthPage) {
-        location.assign(`/login?returnTo=${encodeURIComponent(location.pathname + location.search)}`);
+        window.MotorCareRouter?.clearCache();
+        sessionStorage.setItem('motorcare:signed-out', '1');
+        location.replace(`/login?returnTo=${encodeURIComponent(location.pathname + location.search)}`);
       }
       throw error;
     }

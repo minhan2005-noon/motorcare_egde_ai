@@ -132,7 +132,7 @@
           document.getElementById('currentPassword').value,
           document.getElementById('newPassword').value,
         );
-        location.assign('/login');
+        window.MotorCareApp.finishLogout();
       } catch (error) {
         window.MotorCareToast.show(error.message, 'error');
       }
@@ -143,7 +143,7 @@
       try {
         await window.AuthApi.logoutAll();
       } finally {
-        location.assign('/login');
+        window.MotorCareApp.finishLogout();
       }
     });
   });

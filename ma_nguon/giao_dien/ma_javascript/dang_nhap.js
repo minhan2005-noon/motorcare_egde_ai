@@ -32,7 +32,8 @@ loginForm.addEventListener('submit', async (event) => {
     const destination = returnTo?.startsWith('/') && !returnTo.startsWith('//')
       ? returnTo
       : '/dashboard';
-    location.assign(destination);
+    sessionStorage.removeItem('motorcare:signed-out');
+    location.replace(destination);
   } catch (error) {
     window.AuthUi.setAlert(loginAlert, error.message);
   } finally {
