@@ -22,23 +22,49 @@
           </div>
         </div>
         <div class="topbar-actions">
-          <select class="select" id="motorSelect" aria-label="Chọn motor"></select>
-          <span class="status disconnected" id="connectionStatus">Chưa kết nối</span>
-          <button class="button primary small" id="connectionButton" type="button">Kết nối</button>
+          <a class="button secondary small topbar-shortcut" href="/motors">Quản lý thiết bị</a>
+          <a class="button primary small topbar-shortcut" href="/alerts">Xem cảnh báo</a>
         </div>
       </header>
       <div class="loading-line" id="loadingLine"></div>
 
       <section class="page-content">
+        <section class="control-center" aria-labelledby="controlCenterTitle">
+          <div class="control-heading">
+            <span class="control-icon" aria-hidden="true">⌁</span>
+            <div>
+              <span class="control-kicker">Trung tâm điều khiển</span>
+              <h2 id="controlCenterTitle">Thiết bị đang theo dõi</h2>
+            </div>
+          </div>
+
+          <label class="motor-picker" for="motorSelect">
+            <span>Chọn motor</span>
+            <select class="select" id="motorSelect" aria-label="Chọn motor"></select>
+          </label>
+
+          <div class="connection-overview">
+            <span class="connection-pulse" aria-hidden="true"></span>
+            <div>
+              <span class="connection-label">Kết nối thiết bị</span>
+              <strong id="connectionStatusText">Chưa kết nối</strong>
+              <small id="commandLastUpdated">Chưa có dữ liệu mới</small>
+            </div>
+          </div>
+
+          <span class="status disconnected control-status" id="connectionStatus">Chưa kết nối</span>
+          <button class="button primary" id="connectionButton" type="button">Kết nối</button>
+        </section>
+
         <section class="machine-ribbon" aria-labelledby="liveMotorTitle">
           <div class="machine-ribbon-copy">
-            <span class="eyebrow"><span class="live-dot" aria-hidden="true"></span> Edge telemetry</span>
-            <h2 id="liveMotorTitle">Trạng thái vận hành trực tiếp</h2>
-            <p>Quan sát nhanh motor đang được chọn và theo dõi luồng dữ liệu cảm biến theo thời gian thực.</p>
+            <span class="eyebrow"><span class="live-dot" aria-hidden="true"></span> Giám sát trực tiếp</span>
+            <h2 id="liveMotorTitle"><span id="selectedMotorName">Trạng thái vận hành</span></h2>
+            <p id="selectedMotorLocation">Quan sát nhanh thiết bị và theo dõi dữ liệu cảm biến theo thời gian thực.</p>
             <div class="machine-facts" aria-label="Thông tin luồng dữ liệu">
-              <span><strong>4</strong> kênh cảm biến</span>
+              <span><strong id="selectedDeviceCode">—</strong> mã thiết bị</span>
+              <span><strong>4</strong> cảm biến</span>
               <span><strong id="sceneRefreshRate">10s</strong> làm mới</span>
-              <span><strong>24/7</strong> giám sát</span>
             </div>
           </div>
           <div class="motor-stage scene-fallback" id="motor3dScene" role="img" aria-label="Mô hình động cơ ba chiều đang quay">
@@ -57,7 +83,13 @@
         <div class="dashboard-grid" id="dashboardGrid">
           <section class="overview-top">
             <article class="card health-card">
-              <h2>Sức khỏe motor</h2>
+              <div class="health-card-heading">
+                <span>
+                  <small>Tình trạng tổng thể</small>
+                  <h2>Sức khỏe motor</h2>
+                </span>
+                <a href="/alerts" aria-label="Xem cảnh báo">↗</a>
+              </div>
               <div class="health-gauge" id="healthGauge">
                 <strong id="healthScore">0<small>%</small></strong>
                 <span id="healthStatus">Chưa có dữ liệu</span>
@@ -71,22 +103,22 @@
             <section class="charts-row">
               <article class="card chart-card">
                 <div class="card-header">
-                  <h3>Độ rung RMS (mm/s)</h3>
-                  <span class="realtime">Real-time</span>
+                  <div><span class="chart-kicker">Cảm biến 01</span><h3>Độ rung RMS <small>mm/s</small></h3></div>
+                  <span class="realtime">Trực tiếp</span>
                 </div>
                 <canvas id="vibrationChart"></canvas>
               </article>
               <article class="card chart-card">
                 <div class="card-header">
-                  <h3>Dòng điện RMS (A)</h3>
-                  <span class="realtime">Real-time</span>
+                  <div><span class="chart-kicker">Cảm biến 02</span><h3>Dòng điện RMS <small>A</small></h3></div>
+                  <span class="realtime">Trực tiếp</span>
                 </div>
                 <canvas id="currentChart"></canvas>
               </article>
               <article class="card chart-card">
                 <div class="card-header">
-                  <h3>Nhiệt độ (°C)</h3>
-                  <span class="realtime">Real-time</span>
+                  <div><span class="chart-kicker">Cảm biến 03</span><h3>Nhiệt độ <small>°C</small></h3></div>
+                  <span class="realtime">Trực tiếp</span>
                 </div>
                 <canvas id="temperatureChart"></canvas>
               </article>
@@ -94,7 +126,10 @@
 
             <article class="card alerts-card">
               <div class="card-header">
-                <h3>Cảnh báo gần đây</h3>
+                <div>
+                  <span class="chart-kicker">Ưu tiên xử lý</span>
+                  <h3>Cảnh báo gần đây</h3>
+                </div>
                 <a class="button secondary small" href="/alerts">Xem tất cả</a>
               </div>
               <div class="data-table-wrap">
@@ -116,7 +151,10 @@
 
           <aside class="card ai-card">
             <div class="card-header">
-              <h3>Gợi ý từ AI</h3>
+              <div>
+                <span class="chart-kicker">Hỗ trợ vận hành</span>
+                <h3>Gợi ý từ AI</h3>
+              </div>
               <span class="status maintenance">Đang hoàn thiện</span>
             </div>
             <div class="ai-body">

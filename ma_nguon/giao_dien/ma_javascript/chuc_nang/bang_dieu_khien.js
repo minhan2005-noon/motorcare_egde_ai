@@ -158,8 +158,13 @@
       : '<option value="">Chưa có motor</option>';
     select.disabled = !hasMotors;
     const status = document.getElementById('connectionStatus');
-    status.className = 'status disconnected';
+    status.className = 'status disconnected control-status';
     status.textContent = 'Chưa kết nối';
+    document.getElementById('connectionStatusText').textContent = 'Chưa kết nối';
+    document.getElementById('commandLastUpdated').textContent = 'Chưa có dữ liệu mới';
+    document.getElementById('selectedMotorName').textContent = 'Trạng thái vận hành';
+    document.getElementById('selectedMotorLocation').textContent = 'Chọn một motor để bắt đầu theo dõi dữ liệu cảm biến.';
+    document.getElementById('selectedDeviceCode').textContent = '—';
     const connectionButton = document.getElementById('connectionButton');
     connectionButton.disabled = true;
     connectionButton.textContent = 'Kết nối';
@@ -212,8 +217,15 @@
 
       const connected = data.connection.status === 'connected';
       const status = document.getElementById('connectionStatus');
-      status.className = `status ${data.connection.status}`;
+      status.className = `status ${data.connection.status} control-status`;
       status.textContent = connected ? 'Đã kết nối' : 'Mất kết nối';
+      document.getElementById('connectionStatusText').textContent = connected ? 'Thiết bị đang trực tuyến' : 'Thiết bị đang ngoại tuyến';
+      document.getElementById('commandLastUpdated').textContent = data.connection.lastUpdated
+        ? `Cập nhật ${window.MotorCareFormat.dateTime(data.connection.lastUpdated)}`
+        : 'Chưa có dữ liệu mới';
+      document.getElementById('selectedMotorName').textContent = selectedMotor.name;
+      document.getElementById('selectedMotorLocation').textContent = selectedMotor.location || 'Chưa cập nhật vị trí thiết bị';
+      document.getElementById('selectedDeviceCode').textContent = data.connection.deviceId || '—';
       const button = document.getElementById('connectionButton');
       button.disabled = false;
       button.textContent = connected ? 'Ngắt kết nối' : 'Kết nối';
