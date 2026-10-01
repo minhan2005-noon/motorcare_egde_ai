@@ -10,6 +10,24 @@
   text-transform: uppercase;
 }
 
+body.public-dashboard {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.public-dashboard .app-shell {
+  display: block;
+}
+
+.public-dashboard .main-panel {
+  width: min(1600px, 100%);
+  margin: 0 auto;
+}
+
+.public-dashboard .control-center {
+  grid-template-columns: minmax(215px, 0.8fr) minmax(220px, 0.8fr) minmax(300px, 1.4fr) auto;
+}
+
 .dashboard-kicker {
   display: block;
   margin-bottom: 3px;

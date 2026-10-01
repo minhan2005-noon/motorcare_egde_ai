@@ -52,5 +52,16 @@ test('opening the application link always starts at the main login page', async 
       dashboardResponse.headers.get('location'),
       '/login?returnTo=%2Fdashboard',
     );
+
+    const healthResponse = await fetch(`${baseUrl}/api/health`);
+    assert.equal(healthResponse.status, 200);
+    assert.match(healthResponse.headers.get('cache-control'), /no-store/);
+    assert.equal(healthResponse.headers.get('pragma'), 'no-cache');
+
+    const publicViewResponse = await fetch(`${baseUrl}/view/test-public-token`, {
+      redirect: 'manual',
+    });
+    assert.equal(publicViewResponse.status, 200);
+    assert.match(await publicViewResponse.text(), /Public live monitor/);
   });
 });

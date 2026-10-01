@@ -64,6 +64,18 @@ const createDeviceToken = asyncHandler(async (req, res) => {
   return response.created(res, { setup: { ...setup, endpoint } }, 'Đã tạo mã kết nối thiết bị');
 });
 
+const createPublicViewToken = asyncHandler(async (req, res) => {
+  const setup = await motorService.createPublicViewToken(req.user.id, req.params.id);
+  const host = req.get('host') || '';
+  const baseUrl = appConfig.publicAppUrl || `${req.protocol}://${host}`;
+  const viewUrl = `${baseUrl}/view/${setup.token}`;
+  return response.created(
+    res,
+    { view: { motorId: setup.motorId, motorName: setup.motorName, url: viewUrl } },
+    'Đã tạo liên kết xem công khai',
+  );
+});
+
 module.exports = {
   list,
   create,
@@ -72,4 +84,5 @@ module.exports = {
   remove,
   setConnection,
   createDeviceToken,
+  createPublicViewToken,
 };

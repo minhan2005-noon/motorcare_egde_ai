@@ -6,6 +6,8 @@ const {
   isDeviceOnline,
   withEffectiveConnectionStatus,
 } = require('../tien_ich/trang_thai_thiet_bi');
+const { hashToken } = require('../tien_ich/ma_xac_thuc');
+const httpError = require('../tien_ich/loi_http');
 
 function round(value, digits = 2) {
   return value === null || value === undefined ? null : Number(value.toFixed(digits));
@@ -168,6 +170,40 @@ async function getOverview(userId, requestedMotorId) {
   };
 }
 
+async function getPublicOverview(token) {
+  const normalizedToken = String(token || '').trim();
+  if (!/^[A-Za-z0-9_-]{40,64}$/.test(normalizedToken)) {
+    throw httpError(404, 'Liên kết xem không hợp lệ hoặc đã hết hiệu lực');
+  }
+
+  const motor = await motorRepository.findByPublicViewTokenHash(hashToken(normalizedToken));
+  if (!motor) {
+    throw httpError(404, 'Liên kết xem không hợp lệ hoặc đã hết hiệu lực');
+  }
+
+  const overview = await getOverview(motor.ownerId, motor.id);
+  const publicMotor = overview.selectedMotor
+    ? {
+      id: overview.selectedMotor.id,
+      name: overview.selectedMotor.name,
+      connectionStatus: overview.connection.status,
+      lastSeenAt: overview.connection.lastUpdated,
+    }
+    : null;
+
+  return {
+    ...overview,
+    motors: publicMotor ? [publicMotor] : [],
+    selectedMotor: publicMotor,
+    connection: {
+      ...overview.connection,
+      deviceId: 'Thiết bị trung tâm',
+    },
+    openAlertCount: overview.alerts.filter((alert) => alert.status === 'open').length,
+  };
+}
+
 module.exports = {
   getOverview,
+  getPublicOverview,
 };

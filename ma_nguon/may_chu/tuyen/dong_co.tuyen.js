@@ -12,6 +12,7 @@ router.get('/:id', motorController.getById);
 router.patch('/:id', motorController.update);
 router.patch('/:id/connection', motorController.setConnection);
 router.post('/:id/device-token', motorController.createDeviceToken);
+router.post('/:id/public-view-token', motorController.createPublicViewToken);
 router.delete('/:id', motorController.remove);
 
 module.exports = router;

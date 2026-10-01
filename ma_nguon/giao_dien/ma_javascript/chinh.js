@@ -56,23 +56,6 @@
   }
   applySettings(state.settings, false);
 
-  function isEditableTarget(target) {
-    return target instanceof Element
-      && Boolean(target.closest('input, textarea, select, [contenteditable="true"]'));
-  }
-
-  ['copy', 'cut', 'paste'].forEach((eventName) => {
-    document.addEventListener(eventName, (event) => {
-      if (!isEditableTarget(event.target)) event.preventDefault();
-    });
-  });
-
-  document.addEventListener('keydown', (event) => {
-    const shortcut = (event.ctrlKey || event.metaKey)
-      && ['c', 'x', 'v'].includes(event.key.toLowerCase());
-    if (shortcut && !isEditableTarget(event.target)) event.preventDefault();
-  });
-
   function bindShellEvents() {
     document.getElementById('mobileMenuButton')?.addEventListener('click', () => {
       document.getElementById('sidebar')?.classList.toggle('open');

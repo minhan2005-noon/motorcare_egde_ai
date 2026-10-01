@@ -11,7 +11,7 @@ test('database migrations create the complete runtime schema', async () => {
   const status = await getDatabaseStatus();
   assert.equal(status.ready, true);
   assert.equal(status.appliedMigrations, status.expectedMigrations);
-  assert.equal(status.latestMigration, '013_tao_gioi_han_tan_suat.sql');
+  assert.equal(status.latestMigration, '014_tao_lien_ket_xem_cong_khai.sql');
 
   const tables = await getDatabase().prepare(`
     SELECT name FROM sqlite_master
@@ -31,4 +31,10 @@ test('database migrations create the complete runtime schema', async () => {
     'PRAGMA table_info(user_settings)',
   ).all();
   assert.equal(settingColumns.some((column) => column.name === 'enable_3d'), false);
+
+  const motorColumns = await getDatabase().prepare('PRAGMA table_info(motors)').all();
+  assert.equal(
+    motorColumns.some((column) => column.name === 'public_view_token_hash'),
+    true,
+  );
 });

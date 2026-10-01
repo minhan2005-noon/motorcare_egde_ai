@@ -588,6 +588,26 @@ body[data-page="calibration"] .split-layout {
 .settings-savebar span.unsaved { color: var(--orange); font-weight: 800; }
 
 .device-connect-body { display: grid; gap: 18px; }
+
+.public-view-panel {
+  display: grid;
+  grid-template-columns: minmax(190px, 0.8fr) minmax(260px, 1.4fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-soft);
+}
+
+.public-view-panel strong { color: var(--ink-strong); }
+.public-view-panel p { margin: 4px 0 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
+.public-view-actions { display: flex; gap: 8px; }
+
+@media (max-width: 860px) {
+  .public-view-panel { grid-template-columns: 1fr; }
+  .public-view-actions { flex-wrap: wrap; }
+}
 .device-live-state { display: flex; align-items: center; gap: 14px; padding: 15px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-soft); }
 .connection-pulse { width: 11px; height: 11px; flex: 0 0 11px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 6px var(--green-soft), 0 0 18px color-mix(in srgb, var(--green) 42%, transparent); }
 .device-live-state strong { color: var(--ink-strong); }

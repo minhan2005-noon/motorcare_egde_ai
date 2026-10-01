@@ -138,7 +138,8 @@ AI khi xác suất đạt từ 50%. Có thể thay đổi ngưỡng bằng biế
 
 ## Kết nối ESP32 và cảm biến thật
 
-1. Chạy MotorCare trên máy tính cùng mạng Wi-Fi với ESP32.
+1. Khi chạy local, máy chủ và ESP32 phải cùng mạng Wi-Fi. Khi dùng từ xa,
+   triển khai MotorCare với URL HTTPS công khai và Turso dùng chung.
 2. Mở Dashboard, chọn motor và nhấn **Kết nối cảm biến** hoặc **Thiết lập**.
 3. Nhấn **Tạo mã kết nối**. Giao diện tự ưu tiên địa chỉ IPv4 LAN của máy chủ.
 4. Sao chép ba dòng `SERVER_URL`, `DEVICE_CODE`, `DEVICE_TOKEN` vào
@@ -152,6 +153,12 @@ biến môi trường `DEVICE_OFFLINE_SECONDS` (mặc định 90 giây).
 Firmware dùng một task mạng và hàng đợi riêng nên HTTP/TLS không chặn chu kỳ lấy
 mẫu 200 Hz. HTTPS được kiểm tra bằng CA gốc trong `motorcare_tls.h`; cần cập nhật
 trust anchor nếu chuyển deployment sang nhà cung cấp chứng chỉ khác.
+
+Sau khi thiết bị đã gửi dữ liệu, quản trị viên có thể chọn **Tạo link xem**
+trong cửa sổ kết nối. Khách hàng chỉ cần mở URL HTTPS dạng `/view/<token>` để
+xem dashboard chỉ-đọc mà không cần đăng nhập. Token xem được lưu dưới dạng
+SHA-256; tạo link mới sẽ vô hiệu hóa link cũ và không làm thay đổi mã ghi dữ
+liệu của ESP32.
 
 ## Triển khai Vercel
 
@@ -167,5 +174,9 @@ PUBLIC_APP_URL=https://your-project.vercel.app
 SKIP_SEED=1
 ```
 
-Nếu không có cấu hình Turso, ứng dụng tự dùng SQLite local. Trên Vercel, chế độ
-dự phòng này dùng `/tmp/motorcare.sqlite` và chỉ phù hợp để kiểm thử tạm thời.
+Nếu không có cấu hình Turso, ứng dụng local tự dùng SQLite. Trên Vercel, ứng
+dụng chủ động từ chối khởi động nếu thiếu Turso vì SQLite `/tmp` không được chia
+sẻ giữa các Function và sẽ làm dữ liệu thiết bị chỉ xuất hiện ngẫu nhiên ở một
+phiên truy cập. Motor chỉ hiển thị trong tài khoản sở hữu motor đã tạo mã kết
+nối; người lắp thiết bị từ xa phải dùng đúng ba dòng cấu hình do tài khoản đó
+tạo ra.

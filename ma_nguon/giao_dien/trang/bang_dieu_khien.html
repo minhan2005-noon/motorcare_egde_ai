@@ -209,6 +209,18 @@
 
         <pre class="firmware-config" id="firmwareConfig">Nhấn “Tạo mã kết nối” để nhận cấu hình firmware.</pre>
         <p class="device-security-note">Không chia sẻ mã kết nối. Tạo mã mới sẽ vô hiệu hóa mã cũ của motor này.</p>
+
+        <section class="public-view-panel" aria-labelledby="publicViewTitle">
+          <div>
+            <strong id="publicViewTitle">Link cho khách hàng xem</strong>
+            <p>Khách chỉ cần mở link HTTPS này để xem dashboard; không cần đăng nhập và không có quyền điều khiển.</p>
+          </div>
+          <input class="input code-input" id="publicViewUrl" readonly placeholder="Nhấn “Tạo link xem” để nhận đường dẫn">
+          <div class="public-view-actions">
+            <button class="button secondary small" id="copyPublicViewUrl" type="button" disabled>Sao chép link</button>
+            <button class="button secondary small" id="generatePublicViewUrl" type="button">Tạo link xem</button>
+          </div>
+        </section>
       </div>
       <div class="modal-footer device-modal-footer">
         <button class="button secondary" id="copyDeviceConfig" type="button" disabled>Sao chép cấu hình</button>

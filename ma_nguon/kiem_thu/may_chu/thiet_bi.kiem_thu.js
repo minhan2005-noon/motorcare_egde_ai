@@ -18,6 +18,7 @@ test('real device token authenticates and persists an embedded sensor reading', 
     deviceCode: `ESP32-${Date.now()}`,
   });
   const setup = await motorService.createDeviceToken(registration.user.id, motor.id);
+  const publicView = await motorService.createPublicViewToken(registration.user.id, motor.id);
 
   await assert.rejects(
     () => deviceService.ingestReading({
@@ -78,4 +79,22 @@ test('real device token authenticates and persists an embedded sensor reading', 
   assert.equal(overview.diagnosis.level, 'danger');
   assert.equal(overview.diagnosis.state, 'jam');
   assert.equal(overview.diagnosis.outcomes[0].probability, 0.91);
+
+  const publicOverview = await dashboardService.getPublicOverview(publicView.token);
+  assert.equal(publicOverview.selectedMotor.id, motor.id);
+  assert.equal(publicOverview.selectedMotor.name, motor.name);
+  assert.equal(publicOverview.motors.length, 1);
+  assert.equal(publicOverview.connection.status, 'connected');
+  assert.equal(publicOverview.diagnosis.state, 'jam');
+  assert.equal('ownerId' in publicOverview.selectedMotor, false);
+
+  const replacementView = await motorService.createPublicViewToken(registration.user.id, motor.id);
+  await assert.rejects(
+    () => dashboardService.getPublicOverview(publicView.token),
+    /không hợp lệ hoặc đã hết hiệu lực/,
+  );
+  assert.equal(
+    (await dashboardService.getPublicOverview(replacementView.token)).selectedMotor.id,
+    motor.id,
+  );
 });
