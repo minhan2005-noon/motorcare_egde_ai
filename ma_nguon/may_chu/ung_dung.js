@@ -42,11 +42,13 @@ function sendPage(filename) {
   return (req, res) => res.sendFile(path.join(webRoot, 'trang', filename));
 }
 
+// Luon bat dau tu man hinh dang nhap khi nguoi dung mo lien ket ung dung.
+// Phien hien tai van duoc giu de cac trang nghiep vu khong bi dang xuat ngoai y muon.
 app.get('/', (req, res) => {
-  res.redirect(req.user ? '/dashboard' : '/login');
+  res.redirect('/login');
 });
 
-app.get('/login', redirectIfAuthenticated, sendPage('dang_nhap.html'));
+app.get('/login', sendPage('dang_nhap.html'));
 app.get('/register', redirectIfAuthenticated, sendPage('dang_ky.html'));
 app.get('/forgot-password', redirectIfAuthenticated, sendPage('quen_mat_khau.html'));
 
