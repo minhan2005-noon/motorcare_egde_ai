@@ -19,5 +19,9 @@
       `/motors/${encodeURIComponent(id)}/public-view-token`,
       {},
     ),
+    createFirmwarePackage: (id, wifi) => api.post(
+      `/motors/${encodeURIComponent(id)}/firmware-package`,
+      { wifi },
+    ),
   };
 }());

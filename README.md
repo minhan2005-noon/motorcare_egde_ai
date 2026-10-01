@@ -141,21 +141,28 @@ AI khi xác suất đạt từ 50%. Có thể thay đổi ngưỡng bằng biế
 1. Khi chạy local, máy chủ và ESP32 phải cùng mạng Wi-Fi. Khi dùng từ xa,
    triển khai MotorCare với URL HTTPS công khai và Turso dùng chung.
 2. Mở Dashboard, chọn motor và nhấn **Kết nối cảm biến** hoặc **Thiết lập**.
-3. Nhấn **Tạo mã kết nối**. Giao diện tự ưu tiên địa chỉ IPv4 LAN của máy chủ.
-4. Sao chép ba dòng `SERVER_URL`, `DEVICE_CODE`, `DEVICE_TOKEN` vào
-   `ma_nguon/phan_mem_nhung/cham_soc_dong_co.ino`, đồng thời điền Wi-Fi.
-5. Nạp firmware và bật ESP32. Dashboard tự chuyển sang trạng thái trực tuyến
+3. Nhập tên và mật khẩu Wi-Fi mà ESP32 sẽ dùng, sau đó nhấn
+   **Tạo & tải gói firmware**.
+4. Server tự tạo `SERVER_URL`, `DEVICE_CODE`, `DEVICE_TOKEN`, tự nhúng cả ba mã
+   cùng Wi-Fi vào firmware, tạo link xem cho khách và tải xuống một project ZIP.
+   Admin không cần sao chép hoặc sửa mã nguồn.
+5. Giải nén project, mở bằng VS Code + PlatformIO và chọn **Upload**. Sau khi
+   bật ESP32, Dashboard tự chuyển sang trạng thái trực tuyến
    khi nhận gói dữ liệu đầu tiên; không cần đổi trạng thái bằng tay.
 
 Mã kết nối chỉ hiện một lần và được lưu trên server dưới dạng SHA-256. Tạo mã
 mới sẽ vô hiệu hóa mã cũ. Có thể điều chỉnh thời gian xác định mất kết nối bằng
 biến môi trường `DEVICE_OFFLINE_SECONDS` (mặc định 90 giây).
+Mật khẩu Wi-Fi không được lưu vào cơ sở dữ liệu, nhưng nằm trong source đã cấu
+hình bên trong file ZIP; không chia sẻ gói firmware. Tạo gói mới cũng tự tạo
+link xem mới và làm mã thiết bị/link xem cũ hết hiệu lực.
 Firmware dùng một task mạng và hàng đợi riêng nên HTTP/TLS không chặn chu kỳ lấy
 mẫu 200 Hz. HTTPS được kiểm tra bằng CA gốc trong `motorcare_tls.h`; cần cập nhật
 trust anchor nếu chuyển deployment sang nhà cung cấp chứng chỉ khác.
 
-Sau khi thiết bị đã gửi dữ liệu, quản trị viên có thể chọn **Tạo link xem**
-trong cửa sổ kết nối. Khách hàng chỉ cần mở URL HTTPS dạng `/view/<token>` để
+Link xem được tạo tự động khi tải gói firmware. Quản trị viên vẫn có thể chọn
+**Tạo link mới** trong cửa sổ kết nối khi cần thu hồi link cũ. Khách hàng chỉ
+cần mở URL HTTPS dạng `/view/<token>` để
 xem dashboard chỉ-đọc mà không cần đăng nhập. Token xem được lưu dưới dạng
 SHA-256; tạo link mới sẽ vô hiệu hóa link cũ và không làm thay đổi mã ghi dữ
 liệu của ESP32.

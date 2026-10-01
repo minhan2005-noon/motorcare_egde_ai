@@ -327,6 +327,25 @@
     return copied;
   }
 
+  function downloadBase64File({ filename, contentType, base64 }) {
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let index = 0; index < binary.length; index += 1) {
+      bytes[index] = binary.charCodeAt(index);
+    }
+    const objectUrl = URL.createObjectURL(new Blob([bytes], {
+      type: contentType || 'application/zip',
+    }));
+    const anchor = document.createElement('a');
+    anchor.href = objectUrl;
+    anchor.download = filename || 'MotorCare_firmware.zip';
+    anchor.hidden = true;
+    document.body.append(anchor);
+    anchor.click();
+    anchor.remove();
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+  }
+
   async function checkDevicePairing() {
     const modal = document.getElementById('deviceConnectModal');
     if (pairingInFlight || !selectedMotor || !modal || modal.hidden) return;
@@ -365,7 +384,7 @@
     document.getElementById('copyDeviceConfig').disabled = true;
     document.getElementById('publicViewUrl').value = '';
     document.getElementById('copyPublicViewUrl').disabled = true;
-    document.getElementById('firmwareConfig').textContent = 'Nhấn “Tạo mã kết nối” để nhận cấu hình firmware.';
+    document.getElementById('firmwareConfig').textContent = 'Nhập Wi-Fi và nhấn “Tạo & tải gói firmware”.';
     document.getElementById('deviceConnectModal').hidden = false;
 
     const connected = selectedMotor.connectionStatus === 'connected';
@@ -373,7 +392,7 @@
       connected,
       connected
         ? `Lần nhận gần nhất: ${window.MotorCareFormat.dateTime(selectedMotor.lastSeenAt)}`
-        : 'Tạo mã kết nối, nạp cấu hình vào ESP32 và bật thiết bị.',
+        : 'Nhập Wi-Fi rồi tải gói firmware đã được cấu hình tự động.',
     );
 
     clearInterval(pairingTimer);
@@ -542,13 +561,32 @@
     document.getElementById('deviceConnectModal').addEventListener('click', (event) => {
       if (event.target.id === 'deviceConnectModal') closeDeviceModal();
     });
-    document.getElementById('generateDeviceToken').addEventListener('click', async () => {
+    document.getElementById('downloadFirmwarePackage').addEventListener('click', async () => {
       if (!selectedMotor) return;
-      const button = document.getElementById('generateDeviceToken');
+      const wifiSsidInput = document.getElementById('firmwareWifiSsid');
+      const wifiPasswordInput = document.getElementById('firmwareWifiPassword');
+      const wifiSsid = wifiSsidInput.value.trim();
+      const wifiPassword = wifiPasswordInput.value;
+      const ssidBytes = new TextEncoder().encode(wifiSsid).length;
+      if (!wifiSsid || ssidBytes > 32) {
+        wifiSsidInput.focus();
+        window.MotorCareToast.show('Tên Wi-Fi phải có từ 1 đến 32 byte', 'error');
+        return;
+      }
+      if (wifiPassword && (wifiPassword.length < 8 || wifiPassword.length > 63)) {
+        wifiPasswordInput.focus();
+        window.MotorCareToast.show('Mật khẩu Wi-Fi phải có từ 8 đến 63 ký tự hoặc để trống', 'error');
+        return;
+      }
+
+      const button = document.getElementById('downloadFirmwarePackage');
       button.disabled = true;
-      button.textContent = 'Đang tạo...';
+      button.textContent = 'Đang đóng gói...';
       try {
-        const result = await window.MotorApi.createDeviceToken(selectedMotor.id);
+        const result = await window.MotorApi.createFirmwarePackage(selectedMotor.id, {
+          ssid: wifiSsid,
+          password: wifiPassword,
+        });
         const { deviceCode, token, endpoint } = result.data.setup;
         document.getElementById('deviceEndpoint').value = endpoint;
         generatedDeviceConfig = [
@@ -560,12 +598,19 @@
         document.getElementById('deviceTokenField').hidden = false;
         document.getElementById('firmwareConfig').textContent = generatedDeviceConfig;
         document.getElementById('copyDeviceConfig').disabled = false;
-        setDeviceModalState(false, 'Mã đã sẵn sàng. Nạp cấu hình vào ESP32 và bật thiết bị.');
+        generatedPublicViewUrl = result.data.view.url;
+        document.getElementById('publicViewUrl').value = generatedPublicViewUrl;
+        document.getElementById('copyPublicViewUrl').disabled = false;
+        downloadBase64File(result.data.firmware);
+        wifiPasswordInput.value = '';
+        pairingStartedAt = Date.now();
+        setDeviceModalState(false, 'Gói đã tải xuống. Giải nén, mở bằng PlatformIO, chọn Upload rồi bật ESP32.');
+        window.MotorCareToast.show('Đã tự nhúng cấu hình, tải firmware và tạo link xem');
       } catch (error) {
         window.MotorCareToast.show(error.message, 'error');
       } finally {
         button.disabled = false;
-        button.textContent = 'Tạo mã mới';
+        button.textContent = 'Tạo & tải gói firmware mới';
       }
     });
     document.getElementById('copyDeviceConfig').addEventListener('click', async () => {

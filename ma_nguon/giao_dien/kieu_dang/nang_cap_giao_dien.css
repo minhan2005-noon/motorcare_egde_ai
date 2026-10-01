@@ -616,6 +616,17 @@ body[data-page="calibration"] .split-layout {
 .device-steps { margin: 0; padding-left: 22px; color: var(--muted); font-size: 12px; line-height: 1.8; }
 .device-config-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .device-config-grid .full { grid-column: 1 / -1; }
+.wifi-package-panel {
+  display: grid;
+  gap: 13px;
+  padding: 15px;
+  border: 1px solid color-mix(in srgb, var(--blue) 35%, var(--line));
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--surface) 91%, var(--blue) 9%);
+}
+.wifi-package-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.wifi-package-heading strong { color: var(--ink-strong); font-size: 12px; }
+.wifi-package-heading span { color: var(--muted); font-size: 10px; }
 .code-input,
 .firmware-config-panel {
   overflow: hidden;
@@ -657,6 +668,7 @@ body[data-page="calibration"] .split-layout {
 @media (max-width: 620px) {
   .firmware-config-heading { align-items: stretch; flex-direction: column; }
   .firmware-config-heading .button { width: 100%; }
+  .wifi-package-heading { align-items: flex-start; flex-direction: column; gap: 3px; }
 }
 
 @keyframes panel-in {

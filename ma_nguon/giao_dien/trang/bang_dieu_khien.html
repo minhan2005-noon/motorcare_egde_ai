@@ -182,15 +182,32 @@
           <span class="connection-pulse" aria-hidden="true"></span>
           <div>
             <strong id="deviceLiveTitle">Sẵn sàng ghép nối</strong>
-            <p id="deviceLiveMessage">Tạo mã kết nối, nạp cấu hình vào ESP32 và bật thiết bị.</p>
+            <p id="deviceLiveMessage">Nhập Wi-Fi rồi tải gói firmware đã được cấu hình tự động.</p>
           </div>
         </div>
 
         <ol class="device-steps">
-          <li><span>1</span><div><strong>Tạo mã kết nối</strong><p>Mỗi motor dùng một mã riêng để gửi dữ liệu an toàn.</p></div></li>
-          <li><span>2</span><div><strong>Dán cấu hình vào ESP32</strong><p>Cập nhật Wi-Fi cùng ba dòng cấu hình bên dưới rồi nạp lại firmware.</p></div></li>
-          <li><span>3</span><div><strong>Bật cảm biến</strong><p>Dashboard tự chuyển sang “Đã kết nối” ngay khi nhận gói dữ liệu đầu tiên.</p></div></li>
+          <li><span>1</span><div><strong>Nhập Wi-Fi của thiết bị</strong><p>Thông tin chỉ dùng để đóng gói firmware và không được lưu trên máy chủ.</p></div></li>
+          <li><span>2</span><div><strong>Tải gói firmware</strong><p>Hệ thống tự tạo và nhúng SERVER_URL, DEVICE_CODE, DEVICE_TOKEN cùng Wi-Fi.</p></div></li>
+          <li><span>3</span><div><strong>Nạp và bật ESP32</strong><p>Giải nén, mở bằng PlatformIO rồi Upload; không cần sửa mã nguồn.</p></div></li>
         </ol>
+
+        <section class="wifi-package-panel" aria-labelledby="wifiPackageTitle">
+          <div class="wifi-package-heading">
+            <strong id="wifiPackageTitle">Wi-Fi ESP32 sẽ kết nối</strong>
+            <span>Không lưu vào tài khoản hoặc cơ sở dữ liệu</span>
+          </div>
+          <div class="device-config-grid">
+            <label class="field">
+              <span>Tên Wi-Fi (SSID)</span>
+              <input class="input" id="firmwareWifiSsid" autocomplete="off" maxlength="32" placeholder="Ví dụ: MotorCare-Workshop">
+            </label>
+            <label class="field">
+              <span>Mật khẩu Wi-Fi</span>
+              <input class="input" id="firmwareWifiPassword" type="password" autocomplete="new-password" maxlength="63" placeholder="Tối thiểu 8 ký tự">
+            </label>
+          </div>
+        </section>
 
         <div class="device-config-grid">
           <label class="field">
@@ -210,21 +227,21 @@
         <section class="firmware-config-panel" aria-labelledby="firmwareConfigTitle">
           <div class="firmware-config-heading">
             <div>
-              <strong id="firmwareConfigTitle">Cấu hình nạp vào ESP32</strong>
-              <span>Sao chép đồng thời SERVER_URL, DEVICE_CODE và DEVICE_TOKEN</span>
+              <strong id="firmwareConfigTitle">Cấu hình đã tự động nhúng</strong>
+              <span>Chỉ dùng nút sao chép khi cần kiểm tra kỹ thuật</span>
             </div>
             <button class="button secondary small" id="copyDeviceConfig" type="button" disabled>Sao chép 3 dòng</button>
           </div>
-          <pre class="firmware-config" id="firmwareConfig">Nhấn “Tạo mã kết nối” để nhận cấu hình firmware.</pre>
+          <pre class="firmware-config" id="firmwareConfig">Nhập Wi-Fi và nhấn “Tạo &amp; tải gói firmware”.</pre>
         </section>
-        <p class="device-security-note">Không chia sẻ mã kết nối. Tạo mã mới sẽ vô hiệu hóa mã cũ của motor này.</p>
+        <p class="device-security-note">Gói ZIP chứa mật khẩu Wi-Fi và mã ghi dữ liệu. Không chia sẻ file; tạo gói mới sẽ vô hiệu hóa mã thiết bị và link xem cũ.</p>
 
         <section class="public-view-panel" aria-labelledby="publicViewTitle">
           <div>
             <strong id="publicViewTitle">Link cho khách hàng xem</strong>
             <p>Khách chỉ cần mở link HTTPS này để xem dashboard; không cần đăng nhập và không có quyền điều khiển.</p>
           </div>
-          <input class="input code-input" id="publicViewUrl" readonly placeholder="Nhấn “Tạo link xem” để nhận đường dẫn">
+          <input class="input code-input" id="publicViewUrl" readonly placeholder="Link được tạo tự động cùng gói firmware">
           <div class="public-view-actions">
             <button class="button secondary small" id="copyPublicViewUrl" type="button" disabled>Sao chép link</button>
             <button class="button secondary small" id="generatePublicViewUrl" type="button">Tạo link xem</button>
@@ -232,7 +249,7 @@
         </section>
       </div>
       <div class="modal-footer device-modal-footer">
-        <button class="button primary" id="generateDeviceToken" type="button">Tạo mã kết nối</button>
+        <button class="button primary" id="downloadFirmwarePackage" type="button">Tạo &amp; tải gói firmware</button>
       </div>
     </section>
   </div>

@@ -1,11 +1,53 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const AdmZip = require('adm-zip');
 const authService = require('../../may_chu/dich_vu/xac_thuc.dich_vu');
 const motorService = require('../../may_chu/dich_vu/dong_co.dich_vu');
 const deviceService = require('../../may_chu/dich_vu/thiet_bi.dich_vu');
 const sensorService = require('../../may_chu/dich_vu/cam_bien.dich_vu');
 const alertService = require('../../may_chu/dich_vu/canh_bao.dich_vu');
 const dashboardService = require('../../may_chu/dich_vu/bang_dieu_khien.dich_vu');
+const firmwarePackageService = require('../../may_chu/dich_vu/goi_phan_mem_nhung.dich_vu');
+
+test('firmware package injects connection values without manual source edits', () => {
+  const packaged = firmwarePackageService.createPackage({
+    endpoint: 'https://motorcare.example/api/devices/readings',
+    deviceCode: 'MC-EDGE-2606',
+    deviceToken: 'secret-device-token',
+    publicViewUrl: 'https://motorcare.example/view/public-token',
+    wifi: { ssid: 'MotorCare Lab', password: 'WifiPass123!' },
+  });
+  const archive = new AdmZip(Buffer.from(packaged.base64, 'base64'));
+  const names = archive.getEntries().map((entry) => entry.entryName);
+  const sketchName = names.find((name) => name.endsWith('/src/cham_soc_dong_co.ino'));
+  const guideName = names.find((name) => name.endsWith('/HUONG_DAN.txt'));
+  const viewName = names.find((name) => name.endsWith('/LINK_XEM_KHACH_HANG.txt'));
+
+  assert.match(packaged.filename, /^MotorCare_MC_EDGE_2606\.zip$/);
+  assert.ok(sketchName);
+  assert.ok(names.some((name) => name.endsWith('/platformio.ini')));
+  assert.equal(archive.readAsText(viewName).trim(), 'https://motorcare.example/view/public-token');
+  assert.match(archive.readAsText(guideName), /Khong can sua SERVER_URL/);
+
+  const sketch = archive.readAsText(sketchName);
+  assert.match(sketch, /const char \*WIFI_SSID = "MotorCare Lab";/);
+  assert.match(sketch, /const char \*WIFI_PASSWORD = "WifiPass123!";/);
+  assert.match(sketch, /const char \*SERVER_URL = "https:\/\/motorcare\.example\/api\/devices\/readings";/);
+  assert.match(sketch, /const char \*DEVICE_CODE = "MC-EDGE-2606";/);
+  assert.match(sketch, /const char \*DEVICE_TOKEN = "secret-device-token";/);
+  assert.doesNotMatch(sketch, /TEN_WIFI_CUA_BAN|THAY_MA_KET_NOI_TAI_DAY/);
+});
+
+test('firmware package rejects invalid Wi-Fi before creating a downloadable secret', () => {
+  assert.throws(
+    () => firmwarePackageService.validateWifi({ ssid: '', password: '12345678' }),
+    /Tên Wi-Fi/,
+  );
+  assert.throws(
+    () => firmwarePackageService.validateWifi({ ssid: 'MotorCare', password: 'short' }),
+    /Mật khẩu Wi-Fi/,
+  );
+});
 
 test('real device token authenticates and persists an embedded sensor reading', async () => {
   const registration = await authService.register({

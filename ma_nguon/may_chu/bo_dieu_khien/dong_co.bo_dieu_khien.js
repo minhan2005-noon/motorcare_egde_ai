@@ -1,6 +1,7 @@
 const os = require('os');
 const appConfig = require('../cau_hinh/ung_dung.cau_hinh');
 const motorService = require('../dich_vu/dong_co.dich_vu');
+const firmwarePackageService = require('../dich_vu/goi_phan_mem_nhung.dich_vu');
 const asyncHandler = require('../tien_ich/xu_ly_bat_dong_bo');
 const response = require('../tien_ich/phan_hoi_api');
 
@@ -43,8 +44,7 @@ const setConnection = asyncHandler(async (req, res) => {
   return response.ok(res, { motor }, 'Cập nhật kết nối thành công');
 });
 
-const createDeviceToken = asyncHandler(async (req, res) => {
-  const setup = await motorService.createDeviceToken(req.user.id, req.params.id);
+function deviceEndpoint(req) {
   const host = req.get('host') || '';
   const isLocalHost = /^(localhost|127\.0\.0\.1)(:\d+)?$/i.test(host);
   let endpoint = appConfig.publicAppUrl
@@ -60,6 +60,12 @@ const createDeviceToken = asyncHandler(async (req, res) => {
       endpoint = `http://${localAddress}:${port}/api/devices/readings`;
     }
   }
+  return endpoint;
+}
+
+const createDeviceToken = asyncHandler(async (req, res) => {
+  const setup = await motorService.createDeviceToken(req.user.id, req.params.id);
+  const endpoint = deviceEndpoint(req);
 
   return response.created(res, { setup: { ...setup, endpoint } }, 'Đã tạo mã kết nối thiết bị');
 });
@@ -76,6 +82,28 @@ const createPublicViewToken = asyncHandler(async (req, res) => {
   );
 });
 
+const createFirmwarePackage = asyncHandler(async (req, res) => {
+  const wifi = firmwarePackageService.validateWifi(req.body?.wifi);
+  const setup = await motorService.createDeviceToken(req.user.id, req.params.id);
+  const view = await motorService.createPublicViewToken(req.user.id, req.params.id);
+  const endpoint = deviceEndpoint(req);
+  const baseUrl = appConfig.publicAppUrl || `${req.protocol}://${req.get('host') || ''}`;
+  const publicViewUrl = `${baseUrl}/view/${view.token}`;
+  const firmware = firmwarePackageService.createPackage({
+    endpoint,
+    deviceCode: setup.deviceCode,
+    deviceToken: setup.token,
+    publicViewUrl,
+    wifi,
+  });
+
+  return response.created(res, {
+    setup: { ...setup, endpoint },
+    view: { motorId: view.motorId, motorName: view.motorName, url: publicViewUrl },
+    firmware,
+  }, 'Đã tạo gói firmware và link xem');
+});
+
 module.exports = {
   list,
   create,
@@ -85,4 +113,5 @@ module.exports = {
   setConnection,
   createDeviceToken,
   createPublicViewToken,
+  createFirmwarePackage,
 };
