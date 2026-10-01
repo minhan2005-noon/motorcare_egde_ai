@@ -12,6 +12,7 @@
   };
   let selectedMotor;
   let refreshTimer;
+  let refreshTimerGeneration = 0;
   let pairingTimer;
   let pairingInFlight = false;
   let pairingStartedAt = 0;
@@ -487,9 +488,33 @@
     }
   }
 
+  function startDashboardRefresh() {
+    clearTimeout(refreshTimer);
+    const generation = ++refreshTimerGeneration;
+    const refreshInterval = publicMode
+      ? 3
+      : Number(window.MotorCareApp?.settings.refreshInterval || 10);
+    const sceneRate = document.getElementById('sceneRefreshRate');
+    if (sceneRate) sceneRate.textContent = `${refreshInterval}s`;
+
+    const scheduleNext = () => {
+      if (generation !== refreshTimerGeneration) return;
+      refreshTimer = setTimeout(async () => {
+        if (!document.hidden
+            && document.body.dataset.page === 'dashboard'
+            && (selectedMotor || publicMode)) {
+          await loadDashboard(selectedMotor?.id, { background: true });
+        }
+        if (generation === refreshTimerGeneration) scheduleNext();
+      }, refreshInterval * 1000);
+    };
+    scheduleNext();
+  }
+
   document.addEventListener('motorcare:ready', () => {
-    clearInterval(refreshTimer);
+    clearTimeout(refreshTimer);
     if (document.body.dataset.page !== 'dashboard') {
+      refreshTimerGeneration += 1;
       clearInterval(pairingTimer);
       pairingTimer = undefined;
       dashboardRequestSequence += 1;
@@ -503,14 +528,7 @@
       : new URLSearchParams(location.search).get('motorId');
     if (resetRequested) resetDashboardAfterDeletion();
     else loadDashboard(requestedMotorId);
-    const refreshInterval = Number(window.MotorCareApp?.settings.refreshInterval || 10);
-    const sceneRate = document.getElementById('sceneRefreshRate');
-    if (sceneRate) sceneRate.textContent = `${refreshInterval}s`;
-    refreshTimer = setInterval(() => {
-      if (!document.hidden && document.body.dataset.page === 'dashboard' && selectedMotor) {
-        loadDashboard(selectedMotor.id, { background: true });
-      }
-    }, refreshInterval * 1000);
+    startDashboardRefresh();
 
     if (publicMode) return;
 
@@ -608,15 +626,7 @@
 
   document.addEventListener('motorcare:settings-changed', () => {
     if (document.body.dataset.page !== 'dashboard') return;
-    clearInterval(refreshTimer);
-    const refreshInterval = Number(window.MotorCareApp?.settings.refreshInterval || 10);
-    const sceneRate = document.getElementById('sceneRefreshRate');
-    if (sceneRate) sceneRate.textContent = `${refreshInterval}s`;
-    refreshTimer = setInterval(() => {
-      if (!document.hidden && document.body.dataset.page === 'dashboard' && selectedMotor) {
-        loadDashboard(selectedMotor.id, { background: true });
-      }
-    }, refreshInterval * 1000);
+    startDashboardRefresh();
   });
 
   function refreshAfterMotorChange() {

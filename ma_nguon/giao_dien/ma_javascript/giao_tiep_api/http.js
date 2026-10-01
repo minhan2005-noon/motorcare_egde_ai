@@ -9,6 +9,7 @@
     try {
       response = await fetch(`/api${path}`, {
         ...options,
+        cache: 'no-store',
         credentials: 'same-origin',
         headers,
         body: options.body === undefined || options.body instanceof FormData

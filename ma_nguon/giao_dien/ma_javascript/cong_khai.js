@@ -1,7 +1,7 @@
 (function initializePublicDashboard() {
   window.MotorCareApp = {
     settings: {
-      refreshInterval: 5,
+      refreshInterval: 3,
     },
   };
 
