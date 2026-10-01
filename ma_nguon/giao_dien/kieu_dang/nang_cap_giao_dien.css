@@ -617,8 +617,47 @@ body[data-page="calibration"] .split-layout {
 .device-config-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .device-config-grid .full { grid-column: 1 / -1; }
 .code-input,
-.firmware-config { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-.firmware-config { min-height: 110px; margin: 0; padding: 15px; overflow: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-soft); color: var(--green); font-size: 11px; line-height: 1.6; }
+.firmware-config-panel {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-soft);
+}
+
+.firmware-config-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 11px 13px;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 88%, var(--blue) 12%);
+}
+
+.firmware-config-heading div { display: grid; gap: 3px; }
+.firmware-config-heading strong { color: var(--ink-strong); font-size: 12px; }
+.firmware-config-heading span { color: var(--muted); font-size: 10px; }
+.firmware-config-heading .button { flex: 0 0 auto; }
+
+.firmware-config {
+  min-height: 110px;
+  margin: 0;
+  padding: 15px;
+  overflow: auto;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--green);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  line-height: 1.6;
+  user-select: text;
+}
+
+@media (max-width: 620px) {
+  .firmware-config-heading { align-items: stretch; flex-direction: column; }
+  .firmware-config-heading .button { width: 100%; }
+}
 
 @keyframes panel-in {
   from { opacity: 0; transform: translateY(5px); }

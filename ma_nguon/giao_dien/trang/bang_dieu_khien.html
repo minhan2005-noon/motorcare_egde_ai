@@ -207,7 +207,16 @@
           </label>
         </div>
 
-        <pre class="firmware-config" id="firmwareConfig">Nhấn “Tạo mã kết nối” để nhận cấu hình firmware.</pre>
+        <section class="firmware-config-panel" aria-labelledby="firmwareConfigTitle">
+          <div class="firmware-config-heading">
+            <div>
+              <strong id="firmwareConfigTitle">Cấu hình nạp vào ESP32</strong>
+              <span>Sao chép đồng thời SERVER_URL, DEVICE_CODE và DEVICE_TOKEN</span>
+            </div>
+            <button class="button secondary small" id="copyDeviceConfig" type="button" disabled>Sao chép 3 dòng</button>
+          </div>
+          <pre class="firmware-config" id="firmwareConfig">Nhấn “Tạo mã kết nối” để nhận cấu hình firmware.</pre>
+        </section>
         <p class="device-security-note">Không chia sẻ mã kết nối. Tạo mã mới sẽ vô hiệu hóa mã cũ của motor này.</p>
 
         <section class="public-view-panel" aria-labelledby="publicViewTitle">
@@ -223,7 +232,6 @@
         </section>
       </div>
       <div class="modal-footer device-modal-footer">
-        <button class="button secondary" id="copyDeviceConfig" type="button" disabled>Sao chép cấu hình</button>
         <button class="button primary" id="generateDeviceToken" type="button">Tạo mã kết nối</button>
       </div>
     </section>
