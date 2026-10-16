@@ -1,11 +1,60 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const AdmZip = require('adm-zip');
 const authService = require('../../may_chu/dich_vu/xac_thuc.dich_vu');
 const motorService = require('../../may_chu/dich_vu/dong_co.dich_vu');
 const deviceService = require('../../may_chu/dich_vu/thiet_bi.dich_vu');
 const sensorService = require('../../may_chu/dich_vu/cam_bien.dich_vu');
 const alertService = require('../../may_chu/dich_vu/canh_bao.dich_vu');
 const dashboardService = require('../../may_chu/dich_vu/bang_dieu_khien.dich_vu');
+const firmwarePackageService = require('../../may_chu/dich_vu/goi_phan_mem_nhung.dich_vu');
+
+test('firmware package injects connection values without manual source edits', () => {
+  const packaged = firmwarePackageService.createPackage({
+    endpoint: 'https://motorcare.example/api/devices/readings',
+    deviceCode: 'MC-EDGE-2606',
+    deviceToken: 'secret-device-token',
+    publicViewUrl: 'https://motorcare.example/view/public-token',
+    wifi: { ssid: 'MotorCare Lab', password: 'WifiPass123!' },
+  });
+  const archive = new AdmZip(Buffer.from(packaged.base64, 'base64'));
+  const names = archive.getEntries().map((entry) => entry.entryName);
+  const sketchName = names.find((name) => name.endsWith('/src/cham_soc_dong_co.ino'));
+  const guideName = names.find((name) => name.endsWith('/HUONG_DAN.txt'));
+  const viewName = names.find((name) => name.endsWith('/LINK_XEM_KHACH_HANG.txt'));
+
+  assert.match(packaged.filename, /^MotorCare_MC_EDGE_2606\.zip$/);
+  assert.ok(sketchName);
+  assert.ok(names.some((name) => name.endsWith('/platformio.ini')));
+  assert.ok(names.some((name) => name.endsWith('/src/motorcare_v3_final_runtime.h')));
+  assert.ok(names.some((name) => name.endsWith('/src/motorcare_v3_final_accuracy.h')));
+  assert.ok(names.some((name) => name.endsWith('/src/motorcare_v3_final_lite.h')));
+  assert.ok(names.some((name) => name.endsWith('/src/motorcare_features_v3_final_f32.h')));
+  assert.ok(names.some((name) => name.endsWith('/TAI_LIEU_V3_FINAL.md')));
+  assert.equal(archive.readAsText(viewName).trim(), 'https://motorcare.example/view/public-token');
+  assert.match(archive.readAsText(guideName), /Khong can sua SERVER_URL/);
+
+  const sketch = archive.readAsText(sketchName);
+  assert.match(sketch, /const char \*WIFI_SSID = "MotorCare Lab";/);
+  assert.match(sketch, /const char \*WIFI_PASSWORD = "WifiPass123!";/);
+  assert.match(sketch, /const char \*SERVER_URL = "https:\/\/motorcare\.example\/api\/devices\/readings";/);
+  assert.match(sketch, /const char \*DEVICE_CODE = "MC-EDGE-2606";/);
+  assert.match(sketch, /const char \*DEVICE_TOKEN = "secret-device-token";/);
+  assert.match(sketch, /motorcare_v3_final_runtime\.h/);
+  assert.match(sketch, /firmware_version\\":\\"v3_final/);
+  assert.doesNotMatch(sketch, /TEN_WIFI_CUA_BAN|THAY_MA_KET_NOI_TAI_DAY/);
+});
+
+test('firmware package rejects invalid Wi-Fi before creating a downloadable secret', () => {
+  assert.throws(
+    () => firmwarePackageService.validateWifi({ ssid: '', password: '12345678' }),
+    /Tên Wi-Fi/,
+  );
+  assert.throws(
+    () => firmwarePackageService.validateWifi({ ssid: 'MotorCare', password: 'short' }),
+    /Mật khẩu Wi-Fi/,
+  );
+});
 
 test('real device token authenticates and persists an embedded sensor reading', async () => {
   const registration = await authService.register({
@@ -18,6 +67,7 @@ test('real device token authenticates and persists an embedded sensor reading', 
     deviceCode: `ESP32-${Date.now()}`,
   });
   const setup = await motorService.createDeviceToken(registration.user.id, motor.id);
+  const publicView = await motorService.createPublicViewToken(registration.user.id, motor.id);
 
   await assert.rejects(
     () => deviceService.ingestReading({
@@ -78,4 +128,22 @@ test('real device token authenticates and persists an embedded sensor reading', 
   assert.equal(overview.diagnosis.level, 'danger');
   assert.equal(overview.diagnosis.state, 'jam');
   assert.equal(overview.diagnosis.outcomes[0].probability, 0.91);
+
+  const publicOverview = await dashboardService.getPublicOverview(publicView.token);
+  assert.equal(publicOverview.selectedMotor.id, motor.id);
+  assert.equal(publicOverview.selectedMotor.name, motor.name);
+  assert.equal(publicOverview.motors.length, 1);
+  assert.equal(publicOverview.connection.status, 'connected');
+  assert.equal(publicOverview.diagnosis.state, 'jam');
+  assert.equal('ownerId' in publicOverview.selectedMotor, false);
+
+  const replacementView = await motorService.createPublicViewToken(registration.user.id, motor.id);
+  await assert.rejects(
+    () => dashboardService.getPublicOverview(publicView.token),
+    /không hợp lệ hoặc đã hết hiệu lực/,
+  );
+  assert.equal(
+    (await dashboardService.getPublicOverview(replacementView.token)).selectedMotor.id,
+    motor.id,
+  );
 });

@@ -1,8 +1,10 @@
-const path = require('path');
 const express = require('express');
 
-if (process.env.VERCEL && !process.env.DB_PATH) {
-  process.env.DB_PATH = path.join('/tmp', 'motorcare.sqlite');
+if (process.env.VERCEL
+    && (!process.env.TURSO_DATABASE_URL || !process.env.TURSO_AUTH_TOKEN)) {
+  throw new Error(
+    'Vercel cần TURSO_DATABASE_URL và TURSO_AUTH_TOKEN để đồng bộ dữ liệu giữa các phiên bản Function',
+  );
 }
 
 const motorCareApp = require('./ma_nguon/may_chu/ung_dung');

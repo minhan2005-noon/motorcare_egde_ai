@@ -1,4 +1,8 @@
 (function createDashboardPage() {
+  const publicViewToken = location.pathname.startsWith('/view/')
+    ? decodeURIComponent(location.pathname.split('/').filter(Boolean).at(-1) || '')
+    : '';
+  const publicMode = Boolean(publicViewToken);
   const colors = {
     vibration: ['#36c8ff', 'rgba(54, 200, 255, 0.12)', '≈'],
     current: ['#44efad', 'rgba(68, 239, 173, 0.12)', '↯'],
@@ -8,10 +12,12 @@
   };
   let selectedMotor;
   let refreshTimer;
+  let refreshTimerGeneration = 0;
   let pairingTimer;
   let pairingInFlight = false;
   let pairingStartedAt = 0;
   let generatedDeviceConfig = '';
+  let generatedPublicViewUrl = '';
   let lastDashboardSignature = '';
   let dashboardRequestSequence = 0;
   let dashboardAbortController;
@@ -224,7 +230,7 @@
     const message = hasMotors && resetAfterDeletion
       ? 'Motor vừa chọn đã được xóa. Chọn một motor khác để xem dữ liệu mới.'
       : 'Thêm motor đầu tiên, sau đó ghi dữ liệu cảm biến để dashboard hiển thị biểu đồ.';
-    const action = hasMotors
+    const action = hasMotors || publicMode
       ? ''
       : '<a class="button primary" href="/motors">Thêm motor</a>';
 
@@ -283,6 +289,63 @@
     document.getElementById('deviceLiveMessage').textContent = message;
   }
 
+  async function copyText(text) {
+    if (!text) return false;
+
+    try {
+      if (navigator.clipboard?.writeText && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+    } catch {
+      // Safari, embedded browsers and denied clipboard permissions use the
+      // selection fallback below.
+    }
+
+    const textarea = document.createElement('textarea');
+    const activeElement = document.activeElement;
+    textarea.value = text;
+    textarea.setAttribute('readonly', '');
+    textarea.setAttribute('aria-hidden', 'true');
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    textarea.style.pointerEvents = 'none';
+    document.body.append(textarea);
+    textarea.focus();
+    textarea.select();
+    textarea.setSelectionRange(0, textarea.value.length);
+
+    let copied = false;
+    try {
+      copied = document.execCommand('copy');
+    } catch {
+      copied = false;
+    } finally {
+      textarea.remove();
+      activeElement?.focus?.();
+    }
+    return copied;
+  }
+
+  function downloadBase64File({ filename, contentType, base64 }) {
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let index = 0; index < binary.length; index += 1) {
+      bytes[index] = binary.charCodeAt(index);
+    }
+    const objectUrl = URL.createObjectURL(new Blob([bytes], {
+      type: contentType || 'application/zip',
+    }));
+    const anchor = document.createElement('a');
+    anchor.href = objectUrl;
+    anchor.download = filename || 'MotorCare_firmware.zip';
+    anchor.hidden = true;
+    document.body.append(anchor);
+    anchor.click();
+    anchor.remove();
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+  }
+
   async function checkDevicePairing() {
     const modal = document.getElementById('deviceConnectModal');
     if (pairingInFlight || !selectedMotor || !modal || modal.hidden) return;
@@ -313,12 +376,15 @@
     if (!selectedMotor) return;
     pairingStartedAt = Date.now();
     generatedDeviceConfig = '';
+    generatedPublicViewUrl = '';
     document.getElementById('deviceEndpoint').value = `${location.origin}/api/devices/readings`;
     document.getElementById('pairingDeviceCode').value = selectedMotor.deviceCode;
     document.getElementById('deviceToken').value = '';
     document.getElementById('deviceTokenField').hidden = true;
     document.getElementById('copyDeviceConfig').disabled = true;
-    document.getElementById('firmwareConfig').textContent = 'Nhấn “Tạo mã kết nối” để nhận cấu hình firmware.';
+    document.getElementById('publicViewUrl').value = '';
+    document.getElementById('copyPublicViewUrl').disabled = true;
+    document.getElementById('firmwareConfig').textContent = 'Nhập Wi-Fi và nhấn “Tạo & tải gói firmware”.';
     document.getElementById('deviceConnectModal').hidden = false;
 
     const connected = selectedMotor.connectionStatus === 'connected';
@@ -326,7 +392,7 @@
       connected,
       connected
         ? `Lần nhận gần nhất: ${window.MotorCareFormat.dateTime(selectedMotor.lastSeenAt)}`
-        : 'Tạo mã kết nối, nạp cấu hình vào ESP32 và bật thiết bị.',
+        : 'Nhập Wi-Fi rồi tải gói firmware đã được cấu hình tự động.',
     );
 
     clearInterval(pairingTimer);
@@ -368,10 +434,12 @@
     dashboardAbortController = new AbortController();
     if (!background && loading) loading.hidden = false;
     try {
-      const result = await window.MotorCareApi.get(
-        `/dashboard/overview${motorId ? `?motorId=${encodeURIComponent(motorId)}` : ''}`,
-        { signal: dashboardAbortController.signal },
-      );
+      const endpoint = publicMode
+        ? `/dashboard/public/${encodeURIComponent(publicViewToken)}`
+        : `/dashboard/overview${motorId ? `?motorId=${encodeURIComponent(motorId)}` : ''}`;
+      const result = await window.MotorCareApi.get(endpoint, {
+        signal: dashboardAbortController.signal,
+      });
       if (requestSequence !== dashboardRequestSequence
           || document.body.dataset.page !== 'dashboard') return;
       const data = result.data;
@@ -439,27 +507,49 @@
     }
   }
 
+  function startDashboardRefresh() {
+    clearTimeout(refreshTimer);
+    const generation = ++refreshTimerGeneration;
+    const refreshInterval = publicMode
+      ? 3
+      : Number(window.MotorCareApp?.settings.refreshInterval || 10);
+    const sceneRate = document.getElementById('sceneRefreshRate');
+    if (sceneRate) sceneRate.textContent = `${refreshInterval}s`;
+
+    const scheduleNext = () => {
+      if (generation !== refreshTimerGeneration) return;
+      refreshTimer = setTimeout(async () => {
+        if (!document.hidden
+            && document.body.dataset.page === 'dashboard'
+            && (selectedMotor || publicMode)) {
+          await loadDashboard(selectedMotor?.id, { background: true });
+        }
+        if (generation === refreshTimerGeneration) scheduleNext();
+      }, refreshInterval * 1000);
+    };
+    scheduleNext();
+  }
+
   document.addEventListener('motorcare:ready', () => {
-    clearInterval(refreshTimer);
+    clearTimeout(refreshTimer);
     if (document.body.dataset.page !== 'dashboard') {
+      refreshTimerGeneration += 1;
       clearInterval(pairingTimer);
       pairingTimer = undefined;
       dashboardRequestSequence += 1;
       dashboardAbortController?.abort();
       return;
     }
-    const resetRequested = new URLSearchParams(location.search).get('reset') === '1';
-    const requestedMotorId = new URLSearchParams(location.search).get('motorId');
+    const resetRequested = !publicMode
+      && new URLSearchParams(location.search).get('reset') === '1';
+    const requestedMotorId = publicMode
+      ? null
+      : new URLSearchParams(location.search).get('motorId');
     if (resetRequested) resetDashboardAfterDeletion();
     else loadDashboard(requestedMotorId);
-    const refreshInterval = Number(window.MotorCareApp?.settings.refreshInterval || 10);
-    const sceneRate = document.getElementById('sceneRefreshRate');
-    if (sceneRate) sceneRate.textContent = `${refreshInterval}s`;
-    refreshTimer = setInterval(() => {
-      if (!document.hidden && document.body.dataset.page === 'dashboard' && selectedMotor) {
-        loadDashboard(selectedMotor.id, { background: true });
-      }
-    }, refreshInterval * 1000);
+    startDashboardRefresh();
+
+    if (publicMode) return;
 
     document.getElementById('motorSelect').addEventListener('change', (event) => {
       if (!event.target.value) return;
@@ -471,13 +561,32 @@
     document.getElementById('deviceConnectModal').addEventListener('click', (event) => {
       if (event.target.id === 'deviceConnectModal') closeDeviceModal();
     });
-    document.getElementById('generateDeviceToken').addEventListener('click', async () => {
+    document.getElementById('downloadFirmwarePackage').addEventListener('click', async () => {
       if (!selectedMotor) return;
-      const button = document.getElementById('generateDeviceToken');
+      const wifiSsidInput = document.getElementById('firmwareWifiSsid');
+      const wifiPasswordInput = document.getElementById('firmwareWifiPassword');
+      const wifiSsid = wifiSsidInput.value.trim();
+      const wifiPassword = wifiPasswordInput.value;
+      const ssidBytes = new TextEncoder().encode(wifiSsid).length;
+      if (!wifiSsid || ssidBytes > 32) {
+        wifiSsidInput.focus();
+        window.MotorCareToast.show('Tên Wi-Fi phải có từ 1 đến 32 byte', 'error');
+        return;
+      }
+      if (wifiPassword && (wifiPassword.length < 8 || wifiPassword.length > 63)) {
+        wifiPasswordInput.focus();
+        window.MotorCareToast.show('Mật khẩu Wi-Fi phải có từ 8 đến 63 ký tự hoặc để trống', 'error');
+        return;
+      }
+
+      const button = document.getElementById('downloadFirmwarePackage');
       button.disabled = true;
-      button.textContent = 'Đang tạo...';
+      button.textContent = 'Đang đóng gói...';
       try {
-        const result = await window.MotorApi.createDeviceToken(selectedMotor.id);
+        const result = await window.MotorApi.createFirmwarePackage(selectedMotor.id, {
+          ssid: wifiSsid,
+          password: wifiPassword,
+        });
         const { deviceCode, token, endpoint } = result.data.setup;
         document.getElementById('deviceEndpoint').value = endpoint;
         generatedDeviceConfig = [
@@ -489,36 +598,80 @@
         document.getElementById('deviceTokenField').hidden = false;
         document.getElementById('firmwareConfig').textContent = generatedDeviceConfig;
         document.getElementById('copyDeviceConfig').disabled = false;
-        setDeviceModalState(false, 'Mã đã sẵn sàng. Nạp cấu hình vào ESP32 và bật thiết bị.');
+        generatedPublicViewUrl = result.data.view.url;
+        document.getElementById('publicViewUrl').value = generatedPublicViewUrl;
+        document.getElementById('copyPublicViewUrl').disabled = false;
+        downloadBase64File(result.data.firmware);
+        wifiPasswordInput.value = '';
+        pairingStartedAt = Date.now();
+        setDeviceModalState(false, 'Gói đã tải xuống. Giải nén, mở bằng PlatformIO, chọn Upload rồi bật ESP32.');
+        window.MotorCareToast.show('Đã tự nhúng cấu hình, tải firmware và tạo link xem');
       } catch (error) {
         window.MotorCareToast.show(error.message, 'error');
       } finally {
         button.disabled = false;
-        button.textContent = 'Tạo mã mới';
+        button.textContent = 'Tạo & tải gói firmware mới';
       }
     });
     document.getElementById('copyDeviceConfig').addEventListener('click', async () => {
       if (!generatedDeviceConfig) return;
-      try {
-        await navigator.clipboard.writeText(generatedDeviceConfig);
+      const copied = await copyText(generatedDeviceConfig);
+      if (copied) {
         window.MotorCareToast.show('Đã sao chép cấu hình ESP32');
-      } catch {
-        window.MotorCareToast.show('Không thể sao chép tự động', 'error');
+      } else {
+        const config = document.getElementById('firmwareConfig');
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(config);
+        selection.removeAllRanges();
+        selection.addRange(range);
+        window.MotorCareToast.show('Không thể sao chép tự động — cấu hình đã được chọn, hãy nhấn Ctrl+C', 'error');
+      }
+    });
+    document.getElementById('generatePublicViewUrl').addEventListener('click', async () => {
+      if (!selectedMotor) return;
+      const button = document.getElementById('generatePublicViewUrl');
+      button.disabled = true;
+      button.textContent = 'Đang tạo...';
+      try {
+        const result = await window.MotorApi.createPublicViewToken(selectedMotor.id);
+        generatedPublicViewUrl = result.data.view.url;
+        document.getElementById('publicViewUrl').value = generatedPublicViewUrl;
+        document.getElementById('copyPublicViewUrl').disabled = false;
+        window.MotorCareToast.show('Đã tạo link xem mới; link cũ đã hết hiệu lực');
+      } catch (error) {
+        window.MotorCareToast.show(error.message, 'error');
+      } finally {
+        button.disabled = false;
+        button.textContent = 'Tạo link mới';
+      }
+    });
+    document.getElementById('copyPublicViewUrl').addEventListener('click', async () => {
+      if (!generatedPublicViewUrl) return;
+      const copied = await copyText(generatedPublicViewUrl);
+      if (copied) {
+        window.MotorCareToast.show('Đã sao chép link xem cho khách hàng');
+      } else {
+        const input = document.getElementById('publicViewUrl');
+        input.focus();
+        input.select();
+        window.MotorCareToast.show('Link đã được chọn, hãy nhấn Ctrl+C', 'error');
       }
     });
   });
 
+  function refreshVisibleDashboard() {
+    if (document.hidden || document.body.dataset.page !== 'dashboard' || !selectedMotor) return;
+    loadDashboard(selectedMotor.id, { background: true });
+  }
+
+  document.addEventListener('visibilitychange', refreshVisibleDashboard);
+  window.addEventListener('focus', refreshVisibleDashboard);
+  window.addEventListener('pageshow', refreshVisibleDashboard);
+
   document.addEventListener('motorcare:settings-changed', () => {
     if (document.body.dataset.page !== 'dashboard') return;
-    clearInterval(refreshTimer);
-    const refreshInterval = Number(window.MotorCareApp?.settings.refreshInterval || 10);
-    const sceneRate = document.getElementById('sceneRefreshRate');
-    if (sceneRate) sceneRate.textContent = `${refreshInterval}s`;
-    refreshTimer = setInterval(() => {
-      if (!document.hidden && document.body.dataset.page === 'dashboard' && selectedMotor) {
-        loadDashboard(selectedMotor.id, { background: true });
-      }
-    }, refreshInterval * 1000);
+    startDashboardRefresh();
   });
 
   function refreshAfterMotorChange() {

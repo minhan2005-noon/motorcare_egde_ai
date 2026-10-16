@@ -84,12 +84,27 @@ async function findDeviceCredentials(deviceCode) {
   };
 }
 
+async function findByPublicViewTokenHash(tokenHash) {
+  return mapMotor(await getDatabase().prepare(
+    'SELECT * FROM motors WHERE public_view_token_hash = ?',
+  ).get(tokenHash));
+}
+
 async function updateDeviceTokenHash(id, deviceTokenHash) {
   await getDatabase().prepare(`
     UPDATE motors
     SET device_token_hash = ?, updated_at = ?
     WHERE id = ?
   `).run(deviceTokenHash, new Date().toISOString(), id);
+  return findById(id);
+}
+
+async function updatePublicViewTokenHash(id, publicViewTokenHash) {
+  await getDatabase().prepare(`
+    UPDATE motors
+    SET public_view_token_hash = ?, updated_at = ?
+    WHERE id = ?
+  `).run(publicViewTokenHash, new Date().toISOString(), id);
   return findById(id);
 }
 
@@ -141,7 +156,9 @@ module.exports = {
   findById,
   findByDeviceCode,
   findDeviceCredentials,
+  findByPublicViewTokenHash,
   updateDeviceTokenHash,
+  updatePublicViewTokenHash,
   update,
   remove,
 };

@@ -129,7 +129,7 @@
           <aside class="card ai-card">
             <div class="card-header">
               <div>
-                <span class="chart-kicker">ESP32 Edge AI</span>
+                <span class="chart-kicker">ESP32 Edge AI · V3 Final</span>
                 <h3>Chẩn đoán trực tiếp</h3>
               </div>
               <span class="status maintenance" id="aiStatus">Chờ dữ liệu</span>
@@ -172,7 +172,7 @@
     <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="deviceConnectTitle">
       <div class="card-header">
         <div>
-          <span class="chart-kicker">ESP32 · MPU6050 · INA219</span>
+          <span class="chart-kicker">V3 Final · 84 đặc trưng · 10 giây</span>
           <h2 id="deviceConnectTitle">Kết nối cảm biến thật</h2>
         </div>
         <button class="icon-button" id="closeDeviceModal" type="button" aria-label="Đóng">×</button>
@@ -182,15 +182,32 @@
           <span class="connection-pulse" aria-hidden="true"></span>
           <div>
             <strong id="deviceLiveTitle">Sẵn sàng ghép nối</strong>
-            <p id="deviceLiveMessage">Tạo mã kết nối, nạp cấu hình vào ESP32 và bật thiết bị.</p>
+            <p id="deviceLiveMessage">Nhập Wi-Fi rồi tải gói firmware đã được cấu hình tự động.</p>
           </div>
         </div>
 
         <ol class="device-steps">
-          <li><span>1</span><div><strong>Tạo mã kết nối</strong><p>Mỗi motor dùng một mã riêng để gửi dữ liệu an toàn.</p></div></li>
-          <li><span>2</span><div><strong>Dán cấu hình vào ESP32</strong><p>Cập nhật Wi-Fi cùng ba dòng cấu hình bên dưới rồi nạp lại firmware.</p></div></li>
-          <li><span>3</span><div><strong>Bật cảm biến</strong><p>Dashboard tự chuyển sang “Đã kết nối” ngay khi nhận gói dữ liệu đầu tiên.</p></div></li>
+          <li><span>1</span><div><strong>Nhập Wi-Fi của thiết bị</strong><p>Thông tin chỉ dùng để đóng gói firmware và không được lưu trên máy chủ.</p></div></li>
+          <li><span>2</span><div><strong>Tải firmware V3 Final</strong><p>Hệ thống nhúng Wi-Fi, API và mã thiết bị vào runtime 84 đặc trưng.</p></div></li>
+          <li><span>3</span><div><strong>Nạp và bật ESP32</strong><p>Giải nén, mở bằng PlatformIO rồi Upload; không cần sửa mã nguồn.</p></div></li>
         </ol>
+
+        <section class="wifi-package-panel" aria-labelledby="wifiPackageTitle">
+          <div class="wifi-package-heading">
+            <strong id="wifiPackageTitle">Wi-Fi ESP32 sẽ kết nối</strong>
+            <span>Không lưu vào tài khoản hoặc cơ sở dữ liệu</span>
+          </div>
+          <div class="device-config-grid">
+            <label class="field">
+              <span>Tên Wi-Fi (SSID)</span>
+              <input class="input" id="firmwareWifiSsid" autocomplete="off" maxlength="32" placeholder="Ví dụ: MotorCare-Workshop">
+            </label>
+            <label class="field">
+              <span>Mật khẩu Wi-Fi</span>
+              <input class="input" id="firmwareWifiPassword" type="password" autocomplete="new-password" maxlength="63" placeholder="Tối thiểu 8 ký tự">
+            </label>
+          </div>
+        </section>
 
         <div class="device-config-grid">
           <label class="field">
@@ -207,12 +224,32 @@
           </label>
         </div>
 
-        <pre class="firmware-config" id="firmwareConfig">Nhấn “Tạo mã kết nối” để nhận cấu hình firmware.</pre>
-        <p class="device-security-note">Không chia sẻ mã kết nối. Tạo mã mới sẽ vô hiệu hóa mã cũ của motor này.</p>
+        <section class="firmware-config-panel" aria-labelledby="firmwareConfigTitle">
+          <div class="firmware-config-heading">
+            <div>
+              <strong id="firmwareConfigTitle">Cấu hình đã tự động nhúng</strong>
+              <span>Chỉ dùng nút sao chép khi cần kiểm tra kỹ thuật</span>
+            </div>
+            <button class="button secondary small" id="copyDeviceConfig" type="button" disabled>Sao chép 3 dòng</button>
+          </div>
+          <pre class="firmware-config" id="firmwareConfig">Nhập Wi-Fi và nhấn “Tạo &amp; tải gói firmware”.</pre>
+        </section>
+        <p class="device-security-note">Gói ZIP chứa mật khẩu Wi-Fi và mã ghi dữ liệu. Không chia sẻ file; tạo gói mới sẽ vô hiệu hóa mã thiết bị và link xem cũ.</p>
+
+        <section class="public-view-panel" aria-labelledby="publicViewTitle">
+          <div>
+            <strong id="publicViewTitle">Link cho khách hàng xem</strong>
+            <p>Khách chỉ cần mở link HTTPS này để xem dashboard; không cần đăng nhập và không có quyền điều khiển.</p>
+          </div>
+          <input class="input code-input" id="publicViewUrl" readonly placeholder="Link được tạo tự động cùng gói firmware">
+          <div class="public-view-actions">
+            <button class="button secondary small" id="copyPublicViewUrl" type="button" disabled>Sao chép link</button>
+            <button class="button secondary small" id="generatePublicViewUrl" type="button">Tạo link xem</button>
+          </div>
+        </section>
       </div>
       <div class="modal-footer device-modal-footer">
-        <button class="button secondary" id="copyDeviceConfig" type="button" disabled>Sao chép cấu hình</button>
-        <button class="button primary" id="generateDeviceToken" type="button">Tạo mã kết nối</button>
+        <button class="button primary" id="downloadFirmwarePackage" type="button">Tạo &amp; tải gói firmware</button>
       </div>
     </section>
   </div>

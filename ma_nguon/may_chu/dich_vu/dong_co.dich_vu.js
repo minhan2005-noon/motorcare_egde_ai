@@ -3,6 +3,7 @@ const motorRepository = require('../kho_du_lieu/dong_co.kho_du_lieu');
 const motorValidator = require('../kiem_tra/dong_co.kiem_tra');
 const httpError = require('../tien_ich/loi_http');
 const { withEffectiveConnectionStatus } = require('../tien_ich/trang_thai_thiet_bi');
+const { createOpaqueToken, hashToken } = require('../tien_ich/ma_xac_thuc');
 
 async function createDeviceCode() {
   for (let attempt = 0; attempt < 10; attempt += 1) {
@@ -108,6 +109,17 @@ async function createDeviceToken(userId, id) {
   };
 }
 
+async function createPublicViewToken(userId, id) {
+  const motor = await getMotor(userId, id);
+  const token = createOpaqueToken();
+  await motorRepository.updatePublicViewTokenHash(id, hashToken(token));
+  return {
+    motorId: motor.id,
+    motorName: motor.name,
+    token,
+  };
+}
+
 module.exports = {
   listMotors,
   createMotor,
@@ -116,4 +128,5 @@ module.exports = {
   deleteMotor,
   setConnection,
   createDeviceToken,
+  createPublicViewToken,
 };

@@ -34,6 +34,14 @@ app.use('/css', express.static(path.join(webRoot, 'kieu_dang'), { index: false }
 app.use('/js', express.static(path.join(webRoot, 'ma_javascript'), { index: false }));
 app.get('/favicon.ico', (req, res) => res.sendStatus(204));
 app.use(loadAuth);
+app.use('/api', (req, res, next) => {
+  // Authenticated/device state must always come from the shared database.
+  // Explicitly prevent browsers and intermediary CDNs from serving one
+  // client's stale motor state to another request.
+  res.setHeader('Cache-Control', 'no-store, private');
+  res.setHeader('Pragma', 'no-cache');
+  next();
+});
 app.use('/api', auditMiddleware);
 
 app.use('/api', routes);
@@ -51,6 +59,7 @@ app.get('/', (req, res) => {
 app.get('/login', sendPage('dang_nhap.html'));
 app.get('/register', redirectIfAuthenticated, sendPage('dang_ky.html'));
 app.get('/forgot-password', redirectIfAuthenticated, sendPage('quen_mat_khau.html'));
+app.get('/view/:token', sendPage('xem_cong_khai.html'));
 
 app.get('/dashboard', requirePageAuth, (req, res) => {
   res.sendFile(path.join(webRoot, 'trang/bang_dieu_khien.html'));
