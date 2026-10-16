@@ -52,23 +52,28 @@ function createPackage({ endpoint, deviceCode, deviceToken, publicViewUrl, wifi 
   const zip = new AdmZip();
   zip.addFile(`${root}src/cham_soc_dong_co.ino`, Buffer.from(firmware));
   for (const filename of [
-    'motorcare_features.h',
-    'motorcare_predict.h',
+    'motorcare_features_v3_final_f32.h',
+    'motorcare_profile_features.h',
+    'motorcare_normal_profile.h',
+    'motorcare_v3_final_accuracy.h',
+    'motorcare_v3_final_lite.h',
+    'motorcare_v3_final_runtime.h',
     'motorcare_tls.h',
-    'model_weights.h',
   ]) {
     zip.addFile(`${root}src/${filename}`, readFirmwareFile(filename));
   }
-  zip.addFile(`${root}platformio.ini`, Buffer.from(`[platformio]\nsrc_dir = src\n\n[env:esp32dev]\nplatform = espressif32\nboard = esp32dev\nframework = arduino\nmonitor_speed = 115200\nlib_deps =\n  adafruit/Adafruit INA219@^1.2.3\n`));
+  zip.addFile(`${root}platformio.ini`, Buffer.from(`[platformio]\nsrc_dir = src\n\n[env:esp32dev]\nplatform = espressif32\nboard = esp32dev\nframework = arduino\nmonitor_speed = 115200\n`));
+  zip.addFile(`${root}TAI_LIEU_V3_FINAL.md`, readFirmwareFile('INTEGRATION_V3_FINAL.md'));
   zip.addFile(`${root}LINK_XEM_KHACH_HANG.txt`, Buffer.from(`${publicViewUrl}\n`));
   zip.addFile(`${root}HUONG_DAN.txt`, Buffer.from([
-    'MOTORCARE EDGE AI - GOI FIRMWARE DA CAU HINH',
+    'MOTORCARE EDGE AI V3 FINAL - GOI FIRMWARE DA CAU HINH',
     '',
     '1. Giai nen thu muc nay.',
     '2. Mo thu muc bang VS Code co PlatformIO.',
     '3. Cam ESP32 vao may tinh va chon Upload.',
     '4. Khong can sua SERVER_URL, DEVICE_CODE, DEVICE_TOKEN hoac Wi-Fi.',
     '5. Mo Serial Monitor 115200; Web: HTTP 201 nghia la gui du lieu thanh cong.',
+    '6. Firmware lay mau MPU6050 200 Hz, INA219 20 Hz va chay MotorCare V3 Final tren ESP32.',
     '',
     `Link xem cho khach: ${publicViewUrl}`,
     '',

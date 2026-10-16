@@ -1,0 +1,9 @@
+.chart-data-*/
+.codex-deck-build/
+.codex-finalizer/
+.pio/
+outputs/
+portfolio-cv/
+src/
+tmp/
+CV_*.pdf

@@ -26,6 +26,11 @@ test('firmware package injects connection values without manual source edits', (
   assert.match(packaged.filename, /^MotorCare_MC_EDGE_2606\.zip$/);
   assert.ok(sketchName);
   assert.ok(names.some((name) => name.endsWith('/platformio.ini')));
+  assert.ok(names.some((name) => name.endsWith('/src/motorcare_v3_final_runtime.h')));
+  assert.ok(names.some((name) => name.endsWith('/src/motorcare_v3_final_accuracy.h')));
+  assert.ok(names.some((name) => name.endsWith('/src/motorcare_v3_final_lite.h')));
+  assert.ok(names.some((name) => name.endsWith('/src/motorcare_features_v3_final_f32.h')));
+  assert.ok(names.some((name) => name.endsWith('/TAI_LIEU_V3_FINAL.md')));
   assert.equal(archive.readAsText(viewName).trim(), 'https://motorcare.example/view/public-token');
   assert.match(archive.readAsText(guideName), /Khong can sua SERVER_URL/);
 
@@ -35,6 +40,8 @@ test('firmware package injects connection values without manual source edits', (
   assert.match(sketch, /const char \*SERVER_URL = "https:\/\/motorcare\.example\/api\/devices\/readings";/);
   assert.match(sketch, /const char \*DEVICE_CODE = "MC-EDGE-2606";/);
   assert.match(sketch, /const char \*DEVICE_TOKEN = "secret-device-token";/);
+  assert.match(sketch, /motorcare_v3_final_runtime\.h/);
+  assert.match(sketch, /firmware_version\\":\\"v3_final/);
   assert.doesNotMatch(sketch, /TEN_WIFI_CUA_BAN|THAY_MA_KET_NOI_TAI_DAY/);
 });
 

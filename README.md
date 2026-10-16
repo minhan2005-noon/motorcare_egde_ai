@@ -98,10 +98,12 @@ thật không trả mã OTP trong API.
 
 ## Phạm vi AI
 
-Source từ bộ MotorCare trên Google Drive đã được sắp vào các khu vực sẵn có:
+Source MotorCare được sắp vào các khu vực sẵn có:
 
-- `ma_nguon/phan_mem_nhung`: sketch ESP32, trích xuất 15 đặc trưng và trọng số
-  mô hình MLP `15 -> 12 -> 8 -> 3`.
+- `ma_nguon/phan_mem_nhung`: firmware MotorCare V3 Final cho ESP32, gồm quality
+  gate, 84 đặc trưng vật lý/hình học, mô hình 6 lớp, novelty shadow và timeline
+  cảnh báo 10 giây. Firmware lấy mẫu MPU6050 ở 200 Hz, INA219 ở 20 Hz và gửi
+  kết quả ba nhánh kẹt tải/rung/sụt áp lên API bằng một FreeRTOS task riêng.
 - `ma_nguon/tri_tue_nhan_tao/tien_ich/bo_du_lieu.py`: làm sạch dữ liệu đo và
   tạo các cửa sổ đặc trưng một giây.
 - `ma_nguon/tri_tue_nhan_tao/du_lieu`: mô tả dữ liệu, thứ tự đặc trưng và bản
@@ -131,10 +133,10 @@ có thể xuất trực tiếp trọng số C++ cho firmware. Không chia ngẫu
 cửa sổ vì cách đó làm rò rỉ dữ liệu giữa các đoạn của cùng buổi đo.
 
 Dashboard Express nhận trực tiếp trạng thái AI và xác suất kẹt tải, rung bất
-thường, sụt áp từ ESP32 qua `POST /api/devices/readings`. Kết quả được lưu cùng
-dữ liệu cảm biến, hiển thị trong thẻ **Chẩn đoán trực tiếp** và tự tạo cảnh báo
-AI khi xác suất đạt từ 50%. Có thể thay đổi ngưỡng bằng biến môi trường
-`AI_ALERT_THRESHOLD`.
+thường, sụt áp từ runtime V3 Final trên ESP32 qua `POST /api/devices/readings`.
+Kết quả được lưu cùng dữ liệu cảm biến, hiển thị trong thẻ **Chẩn đoán trực
+tiếp** và tự tạo cảnh báo AI khi xác suất đạt từ 50%. Có thể thay đổi ngưỡng
+bằng biến môi trường `AI_ALERT_THRESHOLD`.
 
 ## Kết nối ESP32 và cảm biến thật
 
@@ -144,7 +146,8 @@ AI khi xác suất đạt từ 50%. Có thể thay đổi ngưỡng bằng biế
 3. Nhập tên và mật khẩu Wi-Fi mà ESP32 sẽ dùng, sau đó nhấn
    **Tạo & tải gói firmware**.
 4. Server tự tạo `SERVER_URL`, `DEVICE_CODE`, `DEVICE_TOKEN`, tự nhúng cả ba mã
-   cùng Wi-Fi vào firmware, tạo link xem cho khách và tải xuống một project ZIP.
+   cùng Wi-Fi vào firmware V3 Final, đóng gói đầy đủ các header runtime/model,
+   tạo link xem cho khách và tải xuống một project ZIP.
    Admin không cần sao chép hoặc sửa mã nguồn.
 5. Giải nén project, mở bằng VS Code + PlatformIO và chọn **Upload**. Sau khi
    bật ESP32, Dashboard tự chuyển sang trạng thái trực tuyến
@@ -156,9 +159,11 @@ biến môi trường `DEVICE_OFFLINE_SECONDS` (mặc định 90 giây).
 Mật khẩu Wi-Fi không được lưu vào cơ sở dữ liệu, nhưng nằm trong source đã cấu
 hình bên trong file ZIP; không chia sẻ gói firmware. Tạo gói mới cũng tự tạo
 link xem mới và làm mã thiết bị/link xem cũ hết hiệu lực.
-Firmware dùng một task mạng và hàng đợi riêng nên HTTP/TLS không chặn chu kỳ lấy
-mẫu 200 Hz. HTTPS được kiểm tra bằng CA gốc trong `motorcare_tls.h`; cần cập nhật
-trust anchor nếu chuyển deployment sang nhà cung cấp chứng chỉ khác.
+Firmware dùng ba task tách biệt cho lấy mẫu, suy luận và mạng; hàng đợi riêng
+đảm bảo HTTP/TLS không chặn chu kỳ lấy mẫu 200 Hz. HTTPS được kiểm tra bằng CA
+gốc trong `motorcare_tls.h`; cần cập nhật trust anchor nếu chuyển deployment
+sang nhà cung cấp chứng chỉ khác. Chi tiết runtime nằm trong
+`ma_nguon/phan_mem_nhung/INTEGRATION_V3_FINAL.md`.
 
 Link xem được tạo tự động khi tải gói firmware. Quản trị viên vẫn có thể chọn
 **Tạo link mới** trong cửa sổ kết nối khi cần thu hồi link cũ. Khách hàng chỉ
