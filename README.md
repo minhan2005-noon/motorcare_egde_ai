@@ -22,8 +22,6 @@ nằm trong `ma_nguon/may_chu/co_so_du_lieu/chuyen_doi`.
 
 ```bash
 npm run dev
-npm test
-npm run test:firmware
 npm run db:check
 npm run db:seed
 ```
@@ -32,16 +30,8 @@ npm run db:seed
 đã áp dụng với mã nguồn. Endpoint `/api/health/ready` cung cấp cùng trạng thái
 cho hệ thống triển khai; `/api/health` chỉ là liveness nhẹ.
 
-`npm test` chạy cả test Node.js và test pipeline AI. Cần cài dependency Python
-trước lần chạy đầu tiên:
-
-```bash
-python3 -m pip install -r ma_nguon/tri_tue_nhan_tao/requirements.txt
-```
-
-`npm run test:firmware` biên dịch sketch cho `esp32dev` bằng PlatformIO để bắt
-lỗi C++ và dependency cảm biến trước khi nạp lên bo mạch. Nếu máy chưa có
-PlatformIO, cài bằng `python3 -m pip install platformio`.
+Nhánh `main` chỉ chứa mã nguồn và cấu hình production. Bộ kiểm thử, tài liệu
+phát triển và slide thuyết trình được lưu trên nhánh `dev`.
 
 Dữ liệu demo mặc định bị tắt. Chỉ bật ở máy phát triển bằng
 `SKIP_SEED=0` và một `DEMO_PASSWORD` riêng trong `.env`; production luôn bỏ qua
@@ -125,7 +115,6 @@ python3 ma_nguon/tri_tue_nhan_tao/huan_luyen/huan_luyen_mo_hinh.py \
 python3 ma_nguon/tri_tue_nhan_tao/huan_luyen/danh_gia_mo_hinh.py \
   ma_nguon/tri_tue_nhan_tao/mo_hinh/motorcare_mlp.joblib \
   ma_nguon/tri_tue_nhan_tao/du_lieu/motorcare_features_1s.csv
-python3 -m unittest discover -s ma_nguon/kiem_thu/tri_tue_nhan_tao -p 'test_*.py'
 ```
 
 Pipeline chia train/test theo `session_id`, lưu model cùng metadata/metrics và
@@ -162,8 +151,8 @@ link xem mới và làm mã thiết bị/link xem cũ hết hiệu lực.
 Firmware dùng ba task tách biệt cho lấy mẫu, suy luận và mạng; hàng đợi riêng
 đảm bảo HTTP/TLS không chặn chu kỳ lấy mẫu 200 Hz. HTTPS được kiểm tra bằng CA
 gốc trong `motorcare_tls.h`; cần cập nhật trust anchor nếu chuyển deployment
-sang nhà cung cấp chứng chỉ khác. Chi tiết runtime nằm trong
-`ma_nguon/phan_mem_nhung/INTEGRATION_V3_FINAL.md`.
+sang nhà cung cấp chứng chỉ khác. Tài liệu runtime chi tiết nằm trên nhánh
+`dev` tại `ma_nguon/phan_mem_nhung/INTEGRATION_V3_FINAL.md`.
 
 Link xem được tạo tự động khi tải gói firmware. Quản trị viên vẫn có thể chọn
 **Tạo link mới** trong cửa sổ kết nối khi cần thu hồi link cũ. Khách hàng chỉ

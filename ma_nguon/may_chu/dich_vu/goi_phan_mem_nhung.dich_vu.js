@@ -63,7 +63,6 @@ function createPackage({ endpoint, deviceCode, deviceToken, publicViewUrl, wifi 
     zip.addFile(`${root}src/${filename}`, readFirmwareFile(filename));
   }
   zip.addFile(`${root}platformio.ini`, Buffer.from(`[platformio]\nsrc_dir = src\n\n[env:esp32dev]\nplatform = espressif32\nboard = esp32dev\nframework = arduino\nmonitor_speed = 115200\n`));
-  zip.addFile(`${root}TAI_LIEU_V3_FINAL.md`, readFirmwareFile('INTEGRATION_V3_FINAL.md'));
   zip.addFile(`${root}LINK_XEM_KHACH_HANG.txt`, Buffer.from(`${publicViewUrl}\n`));
   zip.addFile(`${root}HUONG_DAN.txt`, Buffer.from([
     'MOTORCARE EDGE AI V3 FINAL - GOI FIRMWARE DA CAU HINH',
